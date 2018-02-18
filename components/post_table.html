@@ -1,0 +1,31 @@
+<table>
+    <tr jqcIf="posts.length > 0">
+        <th><a href="javascript:void(0)" jqcOn='click:{ orderBy: "user", fire: "order()"}'>User
+            <span jqcIf='orderBy == "user"'>&#x2193;</span>
+        </a></th>
+        <th><a href="javascript:void(0)" jqcOn='click:{ orderBy: "title", fire: "order()"}'>Title
+                <span jqcIf='orderBy == "title"'>&#x2193;</span>
+            </a></th>
+        <th><a href="javascript:void(0)" jqcOn='click:{ orderBy: "body", fire: "order()"}'>Body
+                <span jqcIf='orderBy == "body"'>&#x2193;</span>
+            </a></th>
+    </tr>
+    <tr jqc="post_row" jqcEach="posts"></tr>
+</table>
+
+<script>
+    jqc_module = {
+        posts : [],
+        orderBy : '',
+        order : function(){
+            var orderBy = this.orderBy;
+            this.posts.sort(
+                function(x, y)
+                {
+
+                    return x[orderBy]>y[orderBy]?1:x[orderBy]==y[orderBy]?0:-1;
+                }
+            );
+        }
+    };
+</script>

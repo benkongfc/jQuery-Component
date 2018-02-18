@@ -1,0 +1,14 @@
+<h2>Todo List</h2>
+<div jqc="todo_ul" jqcLink="todos:todos"></div>
+<div jqc="todo_input" jqcCallback="add:addTodo"></div>
+
+<script>
+    (function($) {
+        return {
+            todos : ['One task', 'Two task'],
+            addTodo: function(todo) {
+                this.todos.push(todo);    
+            }
+        }
+    })(jQuery);
+</script>

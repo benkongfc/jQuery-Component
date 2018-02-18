@@ -1,0 +1,20 @@
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" jqcText="searchBy"></button>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" jqcOn='click:{ searchBy: "Title"}'>Title</a>
+      <a class="dropdown-item" jqcOn='click:{ searchBy: "Body"}'>Body</a>
+    </div>
+  </div>
+  <input type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon2" jqcBind='txt'>
+  <div class="input-group-append">
+    <button class="btn btn-outline-secondary" type="button" jqcOn='click: {fire: "parent.search(searchBy, txt)"}'>&#128269;</button>
+  </div>
+</div>
+  
+  <script>
+    jqc_module = {
+        searchBy: "Title",
+        txt: ""
+    };
+  </script>

@@ -1,0 +1,38 @@
+<h2>Post Search</h2>
+<div jqc="search_bar" jqcCallback='search:searchPost'></div>
+<div jqc="post_table"></div>
+<div jqc="post_table" jqcLink="filteredPosts:posts"></div>
+
+<script>
+(function($) {
+    var posts = [];
+    var users = [];
+    return {
+        filteredPosts: [],
+        init: function() {
+            $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
+                posts = data;
+            });
+            $.get("https://jsonplaceholder.typicode.com/users", '', function(data){
+                users = data;
+            })
+        },
+        searchPost: function(searchBy, txt) {
+            var This = this;
+            this.filteredPosts = [];
+            $.each(posts, function(idx ,post){
+                var key = searchBy.toLowerCase();
+                if(post[key] && post[key].indexOf(txt) > -1){  
+                    $.each(users, function(){
+                        if(this.id == post.userId){
+                            post.user = this.name;
+                            return false;
+                        }
+                    });       
+                    This.filteredPosts.push(post);
+                }
+            });
+        }
+    };
+})(jQuery);
+</script>
