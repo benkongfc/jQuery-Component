@@ -2,7 +2,7 @@
 <div jqcIf="searchs.length">
     <h4>Recent searchs</h4>
     <ul>
-        <li jqcText="searchs[0]"><!--<a href="javascript:;" jqcOn="click: {fire: 'searchRecent(.)'}" jqcText="."></a>--></li>
+        <li jqcEach="searchs" jqcText="."><!--<a href="javascript:;" jqcOn="click: {fire: 'searchRecent(.)'}" jqcText="."></a>--></li>
     </ul>
 </div>
 <div jqc="search_bar" jqcCallback='search:searchPost'></div>

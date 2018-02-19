@@ -12,6 +12,7 @@ jQuery(function($){
             });
         }
         $.when($.templates_deferred[name]).done(function(){
+            console.log("start " + name);
             var html = $.templates[name];
             var script = html.match(/<script>([\S\s]*?)<\/script>/i);
             var data = data1 = {};
@@ -28,7 +29,28 @@ jQuery(function($){
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
+            //local scope function
+            node.scope = function(func, remoteData){
+                for (var i in remoteData) {
+                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
+                }
+                eval(func); //local scope
+            };
+
+            node.copy = function(k, v){
+                data1[k] = JSON.parse(JSON.stringify(v));
+            };
+            node.set = function(k, v){
+                data[k] = v;
+            };
+            node.get = function(k){
+                return data[k];
+            };
+            node.reload = function() { //slow func
+                loop(parent_obj, data);
+            }
             node.addLink = function(field, destField, localNode, obj){
+                //console.log("addLink " + field);
                 destField = destField || field;
                 localNode = localNode || node;
                 obj = obj || 0;
@@ -36,20 +58,23 @@ jQuery(function($){
                     node.link[field] = {targetNode: localNode, targetObj: obj, destField: destField}; //link autorender
             }
 
+            var parseFieldName = function(str){
+                return str.split(/[ .=\[]/)[0];
+            }
+
             //linking
-            if(parent_obj.is('[jqcLink]')){
+            if(parent_obj.is('[jqcLink]')){ //REVERSE linking
                 var field = parent_obj.attr('jqcLink').split(":")[0];
                 var destField = parent_obj.attr('jqcLink').split(":")[1];
                 var targetNode = parent_obj.parent_node;
                 targetNode.addLink(field, destField, node);
-                /*if(!targetNode.link) targetNode.link = {};
-                targetNode.link[field] = {targetNode: node, destField: destField};*/
                 data[destField] = targetNode.get(field);
             }
 
             //init event
             tmpObj.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
-                obj = $(obj);           
+                obj = $(obj);   
+
                 if(obj.attr('jqcBind')){
                     var bind = obj.attr('jqcBind');
                     obj.change(function(){
@@ -107,6 +132,7 @@ jQuery(function($){
 
                 if(obj.attr('jqcIf')){
                     var code = obj.attr('jqcIf');
+                    //node.addLink(parseFieldName(code));
                     var b = false;
                     for (var i in data) {
                         if(!(data[i] instanceof Function))
@@ -123,8 +149,10 @@ jQuery(function($){
                 }
 
                 if(obj.attr('jqcText')){
-                    obj.text(data[obj.attr("jqcText")]);
-                    node.addLink(obj.attr('jqcText'));
+                    if(!obj.attr('jqcEach')){
+                        obj.text(eval("data." + obj.attr("jqcText")));
+                        node.addLink(parseFieldName(obj.attr('jqcText')));
+                    }
                 }
             });
 
@@ -137,6 +165,7 @@ jQuery(function($){
             });
             data.update = function(){
                 console.log("data checking");
+                var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
@@ -150,35 +179,18 @@ jQuery(function($){
                                     console.log("quick load data");
                                     if(targetObj.is("input,select,textarea")) targetObj.val(v); 
                                     else targetObj.text(v);
-                                }else targetNode.reload(); //re-render
+                                }else nodes.push(targetNode); //re-render
                                 targetNode.copy(destField, v);   
                                 if(targetNode != node) node.copy(k, v);      
                             }                 
                         }
                     }
                 });
+                nodes = $.unique(nodes);
+                $.each(nodes, function(){
+                    this.reload();
+                })
             };
-
-            //local scope function
-            node.scope = function(func, remoteData){
-                for (var i in remoteData) {
-                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
-                }
-                eval(func); //local scope
-            };
-
-            node.copy = function(k, v){
-                data1[k] = JSON.parse(JSON.stringify(v));
-            };
-            node.set = function(k, v){
-                data[k] = v;
-            };
-            node.get = function(k){
-                return data[k];
-            };
-            node.reload = function() { //slow func
-                loop(parent_obj, data);
-            }
 
             console.log("load " + name);
             parent_obj.html(node);
