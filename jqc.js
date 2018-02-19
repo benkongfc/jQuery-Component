@@ -136,7 +136,7 @@ jQuery(function($){
                                 var targetNode = node.link[k].targetNode;
                                 var targetObj = node.link[k].targetObj || 0;
                                 targetNode.set(destField, v);
-                                console.log("data changed");
+                                console.log("data changed " + destField);
                                 if(targetObj){
                                     console.log("quick load data");
                                     targetObj.val(v); 
