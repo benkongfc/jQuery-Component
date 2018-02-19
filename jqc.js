@@ -28,61 +28,22 @@ jQuery(function($){
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
-            data.update = function(){
-                console.log("data checking");
-                $.each(data, function(k, v){
-                    if(!(v instanceof Function)){
-                        if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
-                            if(node.link && node.link[k]){
-                                var destField = node.link[k].destField;
-                                var targetNode = node.link[k].targetNode;
-                                var targetObj = node.link[k].targetObj || 0;
-                                targetNode.set(destField, v);
-                                console.log("data changed " + destField);
-                                if(targetObj){
-                                    console.log("quick load data");
-                                    targetObj.val(v); 
-                                }else targetNode.reload(); //re-render
-                                targetNode.copy(destField, v);   
-                                if(targetNode != node) node.copy(k, v);      
-                            }                 
-                        }
-                    }
-                });
-            };
-
-            //local scope function
-            node.scope = function(func, remoteData){
-                for (var i in remoteData) {
-                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
-                }
-                eval(func); //local scope
-            };
-
-            node.copy = function(k, v){
-                data1[k] = JSON.parse(JSON.stringify(v));
-            };
-            node.set = function(k, v){
-                data[k] = v;
-            };
-            node.get = function(k){
-                return data[k];
-            };
-            node.reload = function() { //slow func
-                loop(parent_obj, data);
-            }
-            node.addLink = function(localNode, field, obj){
+            node.addLink = function(field, destField, localNode, obj){
+                destField = destField || field;
+                localNode = localNode || node;
                 obj = obj || 0;
                 if(!node.link) node.link = {};
-                    node.link[field] = {targetNode: localNode, targetObj: obj, destField: field}; //2 way binding
+                    node.link[field] = {targetNode: localNode, targetObj: obj, destField: destField}; //link autorender
             }
-            
+
             //linking
             if(parent_obj.is('[jqcLink]')){
                 var field = parent_obj.attr('jqcLink').split(":")[0];
                 var destField = parent_obj.attr('jqcLink').split(":")[1];
                 var targetNode = parent_obj.parent_node;
-                targetNode.addLink(node, destField);
+                targetNode.addLink(field, destField, node);
+                /*if(!targetNode.link) targetNode.link = {};
+                targetNode.link[field] = {targetNode: node, destField: destField};*/
                 data[destField] = targetNode.get(field);
             }
 
@@ -94,7 +55,8 @@ jQuery(function($){
                     obj.change(function(){
                         data[bind] = obj.val(); //2 way binding
                     });
-                    node.addLink(node, bind, obj);
+                    if(!node.link) node.link = {};
+                    node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
                 }
 
                 if(obj.attr('jqcOn')){
@@ -128,7 +90,7 @@ jQuery(function($){
 
                 if(obj.attr('jqcEach')){
                     var each = obj.attr('jqcEach');
-                    node.addLink(node, each);
+                    node.addLink(each);
                     var html = obj[0].outerHTML;
                     var bFirst = true;
                     $.each(data[each], function(kk, vv){
@@ -162,6 +124,7 @@ jQuery(function($){
 
                 if(obj.attr('jqcText')){
                     obj.text(data[obj.attr("jqcText")]);
+                    node.addLink(obj.attr('jqcText'));
                 }
             });
 
@@ -172,6 +135,50 @@ jQuery(function($){
                 obj.parent_node = node;
                 loop(obj);
             });
+            data.update = function(){
+                console.log("data checking");
+                $.each(data, function(k, v){
+                    if(!(v instanceof Function)){
+                        if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
+                            if(node.link && node.link[k]){
+                                var destField = node.link[k].destField;
+                                var targetNode = node.link[k].targetNode;
+                                var targetObj = node.link[k].targetObj || 0;
+                                targetNode.set(destField, v);
+                                console.log("data changed " + destField);
+                                if(targetObj){
+                                    console.log("quick load data");
+                                    if(targetObj.is("input,select,textarea")) targetObj.val(v); 
+                                    else targetObj.text(v);
+                                }else targetNode.reload(); //re-render
+                                targetNode.copy(destField, v);   
+                                if(targetNode != node) node.copy(k, v);      
+                            }                 
+                        }
+                    }
+                });
+            };
+
+            //local scope function
+            node.scope = function(func, remoteData){
+                for (var i in remoteData) {
+                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
+                }
+                eval(func); //local scope
+            };
+
+            node.copy = function(k, v){
+                data1[k] = JSON.parse(JSON.stringify(v));
+            };
+            node.set = function(k, v){
+                data[k] = v;
+            };
+            node.get = function(k){
+                return data[k];
+            };
+            node.reload = function() { //slow func
+                loop(parent_obj, data);
+            }
 
             console.log("load " + name);
             parent_obj.html(node);
