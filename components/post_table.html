@@ -22,7 +22,7 @@
             this.posts.sort(
                 function(x, y)
                 {
-
+                    console.log("order by " + orderBy);
                     return x[orderBy]>y[orderBy]?1:x[orderBy]==y[orderBy]?0:-1;
                 }
             );

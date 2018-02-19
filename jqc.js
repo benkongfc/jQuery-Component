@@ -28,21 +28,25 @@ jQuery(function($){
             var tmpObj = $('<div><?div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
-            var render = function(tObj){
-                tObj.find("[jqcText]").each(function(k, obj){
-                    obj = $(obj);
-                    obj.text(data[obj.attr("jqcText")]);
-                });
-            };
-            render(tmpObj); //run first render;
+            //linking
+            if(parent_obj.is('[jqcLink]')){
+                var field = parent_obj.attr('jqcLink').split(":")[0];
+                var destField = parent_obj.attr('jqcLink').split(":")[1];
+                var targetNode = parent_obj.parent_node;
+                if(!targetNode.link) targetNode.link = {};
+                targetNode.link[field] = {targetNode: node, destField: destField};
+                data[destField] = targetNode.get(field);
+            }
 
             //init event
             tmpObj.find("[jqcBind]").each(function(k, obj){
                 obj = $(obj);
                 var name = obj.attr('jqcBind');
                 obj.change(function(){
-                    data[name] = obj.val();
+                    data[name] = obj.val(); //2 way binding
                 });
+                if(!node.link) node.link = {};
+                node.link[name] = {targetNode: node, targetObj: obj, destField: name}; //2 way binding
             }); 
 
             tmpObj.find("[jqcOn]").each(function(k, obj){
@@ -50,13 +54,10 @@ jQuery(function($){
                 var val = eval('e={'+obj.attr('jqcOn')+'}');
                 $.each(val, function(onKey, onVal){
                     obj.on(onKey, function(){
-                        var changed = false;
                         $.each(onVal, function(vk, vv){
                             if(vk != 'fire'){
-                                if(data[vk] != vv){
-                                    data[vk] = vv;
-                                    changed = true;
-                                }
+                                data[vk] = vv;
+                                data.update(); 
                             }else{ //fire functions
                                 if(vv.substr(0, 7) == 'parent.'){
                                     eval("parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
@@ -68,12 +69,9 @@ jQuery(function($){
                                     eval("data." + vv + ";data.update()");                           
                                 }
                             }
-                            if(changed)
-                                render(parent_obj);    
                         });
                     });
                 });
-                data.rendered = 1;
             });
 
             tmpObj.find("[jqcCallback]").each(function(k, obj){
@@ -95,11 +93,10 @@ jQuery(function($){
                         obj.after(new_obj);
                         obj = new_obj;
                     }
-                    if(obj.attr('jqc'))
-                        loop(obj, vv);
+                    if(obj.attr('jqcText') == '.') obj.text(vv); 
+                    else if(obj.attr('jqc')) loop(obj, vv);
                     bFirst = false;
                 });
-                render(obj.parent());
             });
             tmpObj.find("[jqcIf]").each(function(k, obj){
                 obj = $(obj);
@@ -110,37 +107,38 @@ jQuery(function($){
                         eval("var " + i + " = '" + data[i] + "'");
                 }
                 eval("b = (" + code + ")");
-                if(!b)
-                    obj.remove();
+                if(!b) obj.remove();
             });
 
+            tmpObj.find("[jqcText]").each(function(k, obj){
+                obj = $(obj);
+                obj.text(data[obj.attr("jqcText")]);
+            });
+
+            //last order
             tmpObj.find('[jqc]').each(function(k, obj){
                 obj = $(obj);
                 if(obj.is("[jqcEach]")) return;
                 obj.parent_node = node;
                 loop(obj);
             });
-
-            //linking
-            if(parent_obj.is('[jqcLink]')){
-                var field = parent_obj.attr('jqcLink').split(":")[0];
-                var destField = parent_obj.attr('jqcLink').split(":")[1];
-                var targetNode = parent_obj.parent_node;
-                if(!targetNode.link) targetNode.link = {};
-                targetNode.link[field] = {targetNode: node, destField: destField};
-                data[destField] = targetNode.get(field);;
-            }
             data.update = function(){
+                console.log("data checking");
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
                             if(node.link && node.link[k]){
                                 var destField = node.link[k].destField;
                                 var targetNode = node.link[k].targetNode;
-                                targetNode.set(destField, v); //re-render
+                                var targetObj = node.link[k].targetObj || 0;
+                                targetNode.set(destField, v);
+                                console.log("data changed");
+                                if(targetObj){
+                                    console.log("quick load data");
+                                    targetObj.val(v); 
+                                }else targetNode.reload(); //re-render
                                 targetNode.copy(destField, v);   
-                                if(targetNode != node)
-                                    node.copy(k, v);      
+                                if(targetNode != node) node.copy(k, v);      
                             }                 
                         }
                     }
@@ -150,8 +148,7 @@ jQuery(function($){
             //local scope function
             node.scope = function(func, remoteData){
                 for (var i in remoteData) {
-                    if(!(remoteData[i] instanceof Function))
-                        eval("var " + i + " = '" + remoteData[i] + "'");
+                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
                 }
                 eval(func); //local scope
             };
@@ -161,12 +158,15 @@ jQuery(function($){
             };
             node.set = function(k, v){
                 data[k] = v;
-                loop(parent_obj, data);
             };
             node.get = function(k){
                 return data[k];
             };
+            node.reload = function() { //slow func
+                loop(parent_obj, data);
+            }
 
+            console.log("load " + name);
             parent_obj.html(node);
         });  
     };         
