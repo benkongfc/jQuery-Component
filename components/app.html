@@ -1,10 +1,10 @@
 <h2>Post Search</h2>
-<!--<div jqcIf="searchs.length">
+<div jqcIf="searchs.length">
     <h4>Recent searchs</h4>
     <ul>
-        <li jqcEach="searchs" jqcText="."></li>
+        <li jqcEach="searchs" jqcText="."><!--<a href="javascript:;" jqcOn="click: {fire: 'searchRecent(.)'}" jqcText="."></a>--></li>
     </ul>
-</div>-->
+</div>
 <div jqc="search_bar" jqcCallback='search:searchPost'></div>
 <div jqc="post_table"></div>
 <div jqc="post_table" jqcLink="filteredPosts:posts"></div>
@@ -39,6 +39,7 @@
                     This.filteredPosts.push(post);
                 }
             });
+            this.searchs.push(searchBy + " -> " + txt);
         }
     };
 })(jQuery);
