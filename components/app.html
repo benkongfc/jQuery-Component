@@ -1,4 +1,10 @@
 <h2>Post Search</h2>
+<!--<div jqcIf="searchs.length">
+    <h4>Recent searchs</h4>
+    <ul>
+        <li jqcEach="searchs" jqcText="."></li>
+    </ul>
+</div>-->
 <div jqc="search_bar" jqcCallback='search:searchPost'></div>
 <div jqc="post_table"></div>
 <div jqc="post_table" jqcLink="filteredPosts:posts"></div>
@@ -9,6 +15,7 @@
     var users = [];
     return {
         filteredPosts: [],
+        searchs : [],
         init: function() {
             $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
                 posts = data;

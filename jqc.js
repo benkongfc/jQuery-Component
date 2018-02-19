@@ -25,7 +25,7 @@ jQuery(function($){
             }
             if(initData) data = initData;
             var node = $(html);
-            var tmpObj = $('<div><?div>').html(node);
+            var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
             //linking
