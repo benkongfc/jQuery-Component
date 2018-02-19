@@ -28,104 +28,6 @@ jQuery(function($){
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
-            //linking
-            if(parent_obj.is('[jqcLink]')){
-                var field = parent_obj.attr('jqcLink').split(":")[0];
-                var destField = parent_obj.attr('jqcLink').split(":")[1];
-                var targetNode = parent_obj.parent_node;
-                if(!targetNode.link) targetNode.link = {};
-                targetNode.link[field] = {targetNode: node, destField: destField};
-                data[destField] = targetNode.get(field);
-            }
-
-            //init event
-            tmpObj.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
-                obj = $(obj);           
-                if(obj.attr('jqcBind')){
-                    var bind = obj.attr('jqcBind');
-                    obj.change(function(){
-                        data[bind] = obj.val(); //2 way binding
-                    });
-                    if(!node.link) node.link = {};
-                    node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
-                }
-
-                if(obj.attr('jqcOn')){
-                    var val = eval('e={'+obj.attr('jqcOn')+'}');
-                    $.each(val, function(onKey, onVal){
-                        obj.on(onKey, function(){
-                            $.each(onVal, function(vk, vv){
-                                if(vk != 'fire'){
-                                    data[vk] = vv;
-                                    data.update(); 
-                                }else{ //fire functions
-                                    if(vv.substr(0, 7) == 'parent.'){
-                                        eval("parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
-                                    }else{
-                                        for (var i in data) {
-                                            if(!(data[i] instanceof Function))
-                                                eval("var " + i + " = '" + data[i] + "'");
-                                        }
-                                        eval("data." + vv + ";data.update()");                           
-                                    }
-                                }
-                            });
-                        });
-                    });
-                }
-
-                if(obj.attr('jqcCallback')){
-                    var val = obj.attr('jqcCallback').split(":");
-                    data[val[0]] = data[val[1]];
-                }
-
-                if(obj.attr('jqcEach')){
-                    var each = obj.attr('jqcEach');
-                    if(!node.link) node.link = {};
-                    node.link[each] = {targetNode: node, destField: each}; //link autorender
-                    var html = obj[0].outerHTML;
-                    var bFirst = true;
-                    $.each(data[each], function(kk, vv){
-                        if(!bFirst){
-                            var new_obj = $(html);
-                            obj.after(new_obj);
-                            obj = new_obj;
-                        }
-                        if(obj.attr('jqcText') == '.') obj.text(vv); 
-                        else if(obj.attr('jqc')) loop(obj, vv);
-                        bFirst = false;
-                    });
-                }
-
-                if(obj.attr('jqcIf')){
-                    var code = obj.attr('jqcIf');
-                    var b = false;
-                    for (var i in data) {
-                        if(!(data[i] instanceof Function))
-                            eval("var " + i + " = '" + data[i] + "'");
-                    }
-                    eval("b = (" + code + ")");
-                    if(!b){
-                        var i = $.inArray(obj[0], node);
-                        if(i > -1){
-                            obj.remove();
-                            node.splice(i,1); //node is another array having this obj, so have to manually remove it
-                        }else obj.remove();
-                    }
-                }
-
-                if(obj.attr('jqcText')){
-                    obj.text(data[obj.attr("jqcText")]);
-                }
-            });
-
-            //last order
-            tmpObj.find('[jqc]').each(function(k, obj){
-                obj = $(obj);
-                if(obj.is("[jqcEach]")) return;
-                obj.parent_node = node;
-                loop(obj);
-            });
             data.update = function(){
                 console.log("data checking");
                 $.each(data, function(k, v){
@@ -169,6 +71,107 @@ jQuery(function($){
             node.reload = function() { //slow func
                 loop(parent_obj, data);
             }
+            node.addLink = function(field, obj){
+                obj = obj || 0;
+                if(!node.link) node.link = {};
+                    node.link[field] = {targetNode: node, targetObj: obj, destField: field}; //2 way binding
+            }
+            
+            //linking
+            if(parent_obj.is('[jqcLink]')){
+                var field = parent_obj.attr('jqcLink').split(":")[0];
+                var destField = parent_obj.attr('jqcLink').split(":")[1];
+                var targetNode = parent_obj.parent_node;
+                targetNode.addLink(destField);
+                data[destField] = targetNode.get(field);
+            }
+
+            //init event
+            tmpObj.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
+                obj = $(obj);           
+                if(obj.attr('jqcBind')){
+                    var bind = obj.attr('jqcBind');
+                    obj.change(function(){
+                        data[bind] = obj.val(); //2 way binding
+                    });
+                    node.addLink(bind, obj);
+                }
+
+                if(obj.attr('jqcOn')){
+                    var val = eval('e={'+obj.attr('jqcOn')+'}');
+                    $.each(val, function(onKey, onVal){
+                        obj.on(onKey, function(){
+                            $.each(onVal, function(vk, vv){
+                                if(vk != 'fire'){
+                                    data[vk] = vv;
+                                    data.update(); 
+                                }else{ //fire functions
+                                    if(vv.substr(0, 7) == 'parent.'){
+                                        eval("parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
+                                    }else{
+                                        for (var i in data) {
+                                            if(!(data[i] instanceof Function))
+                                                eval("var " + i + " = '" + data[i] + "'");
+                                        }
+                                        eval("data." + vv + ";data.update()");                           
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }
+
+                if(obj.attr('jqcCallback')){
+                    var val = obj.attr('jqcCallback').split(":");
+                    data[val[0]] = data[val[1]];
+                }
+
+                if(obj.attr('jqcEach')){
+                    var each = obj.attr('jqcEach');
+                    node.addLink(each);
+                    var html = obj[0].outerHTML;
+                    var bFirst = true;
+                    $.each(data[each], function(kk, vv){
+                        if(!bFirst){
+                            var new_obj = $(html);
+                            obj.after(new_obj);
+                            obj = new_obj;
+                        }
+                        if(obj.attr('jqcText') == '.') obj.text(vv); 
+                        else if(obj.attr('jqc')) loop(obj, vv);
+                        bFirst = false;
+                    });
+                }
+
+                if(obj.attr('jqcIf')){
+                    var code = obj.attr('jqcIf');
+                    var b = false;
+                    for (var i in data) {
+                        if(!(data[i] instanceof Function))
+                            eval("var " + i + " = '" + data[i] + "'");
+                    }
+                    eval("b = (" + code + ")");
+                    if(!b){
+                        var i = $.inArray(obj[0], node);
+                        if(i > -1){
+                            obj.remove();
+                            node.splice(i,1); //node is another array having this obj, so have to manually remove it
+                        }else obj.remove();
+                    }
+                }
+
+                if(obj.attr('jqcText')){
+                    obj.text(data[obj.attr("jqcText")]);
+                }
+            });
+
+            //last order
+            tmpObj.find('[jqc]').each(function(k, obj){
+                obj = $(obj);
+                if(obj.is("[jqcEach]")) return;
+                obj.parent_node = node;
+                loop(obj);
+            });
 
             console.log("load " + name);
             parent_obj.html(node);
