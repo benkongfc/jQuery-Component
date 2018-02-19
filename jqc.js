@@ -71,10 +71,10 @@ jQuery(function($){
             node.reload = function() { //slow func
                 loop(parent_obj, data);
             }
-            node.addLink = function(field, obj){
+            node.addLink = function(localNode, field, obj){
                 obj = obj || 0;
                 if(!node.link) node.link = {};
-                    node.link[field] = {targetNode: node, targetObj: obj, destField: field}; //2 way binding
+                    node.link[field] = {targetNode: localNode, targetObj: obj, destField: field}; //2 way binding
             }
             
             //linking
@@ -82,7 +82,7 @@ jQuery(function($){
                 var field = parent_obj.attr('jqcLink').split(":")[0];
                 var destField = parent_obj.attr('jqcLink').split(":")[1];
                 var targetNode = parent_obj.parent_node;
-                targetNode.addLink(destField);
+                targetNode.addLink(node, destField);
                 data[destField] = targetNode.get(field);
             }
 
@@ -94,7 +94,7 @@ jQuery(function($){
                     obj.change(function(){
                         data[bind] = obj.val(); //2 way binding
                     });
-                    node.addLink(bind, obj);
+                    node.addLink(node, bind, obj);
                 }
 
                 if(obj.attr('jqcOn')){
@@ -128,7 +128,7 @@ jQuery(function($){
 
                 if(obj.attr('jqcEach')){
                     var each = obj.attr('jqcEach');
-                    node.addLink(each);
+                    node.addLink(node, each);
                     var html = obj[0].outerHTML;
                     var bFirst = true;
                     $.each(data[each], function(kk, vv){
