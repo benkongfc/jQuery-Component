@@ -107,7 +107,13 @@ jQuery(function($){
                         eval("var " + i + " = '" + data[i] + "'");
                 }
                 eval("b = (" + code + ")");
-                if(!b) obj.remove();
+                if(!b){
+                    var i = $.inArray(obj[0], node);
+                    if(i > -1){
+                        obj.remove();
+                        node.splice(i,1); //node is another array having this obj, so have to manually remove it
+                    }else obj.remove();
+                }
             });
 
             tmpObj.find("[jqcText]").each(function(k, obj){
