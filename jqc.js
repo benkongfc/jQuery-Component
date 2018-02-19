@@ -132,7 +132,7 @@ jQuery(function($){
 
                 if(obj.attr('jqcIf')){
                     var code = obj.attr('jqcIf');
-                    //node.addLink(parseFieldName(code));
+                    node.addLink(parseFieldName(code));
                     var b = false;
                     for (var i in data) {
                         if(!(data[i] instanceof Function))
