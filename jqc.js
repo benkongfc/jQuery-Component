@@ -218,5 +218,7 @@
             node.parent_obj.html(node);
         });  
     };  
-    window.jqcLoop = loop;       
+    window.jqcLoop = function(id, appName){
+        loop($(id), null, appName);     
+    }  
 })(jQuery);
