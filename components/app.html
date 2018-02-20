@@ -5,7 +5,7 @@
         <li jqcEach="searchs"><a href="javascript:;" jqcOn="click: {fire: 'searchRecent({.})'}" jqcText="{.}"></a></li>
     </ul>
 </div>
-<div jqc="search_bar" jqcCallback='search:searchPost'></div>
+<div jqc="search_bar" jqcCallback='search:searchPost' jqcLink="searchBy:searchBy"></div>
 <div jqc="post_table"></div>
 <div jqc="post_table" jqcLink="filteredPosts:posts"></div>
 
@@ -16,6 +16,7 @@
     return {
         filteredPosts: [],
         searchs : [],
+        searchBy : 'Title',
         init: function() {
             $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
                 posts = data;

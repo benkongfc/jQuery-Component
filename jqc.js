@@ -38,7 +38,7 @@
                 for (var i in remoteData) {
                     if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
                 }
-                eval(func); //local scope
+                return eval(func); //local scope
             };
 
             node.copy = function(k, v){
@@ -60,7 +60,14 @@
                 localNode = localNode || node;
                 obj = obj || 0;
                 if(!node.link) node.link = {};
-                    node.link[field] = {targetNode: localNode, targetObj: obj, destField: destField}; //link autorender
+                if(!node.link[field]) node.link[field] = [];
+                var b = false;
+                $.each(node.link[field], function(i, v){
+                    if(v.targetNode == localNode && v.targetObj == obj && v.destField == destField)
+                        b = true;
+                });
+                if(!b)
+                    node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
             }
 
             var parseFieldName = function(str){
@@ -73,7 +80,8 @@
                     var field = node.parent_obj.attr('jqcLink').split(":")[0];
                     var destField = node.parent_obj.attr('jqcLink').split(":")[1];
                     var targetNode = node.parent_obj.parent_node;
-                    targetNode.addLink(field, destField, node);
+                    node.addLink(destField, field, targetNode);
+                    targetNode.addLink(field, destField, node); 
                     data[destField] = targetNode.get(field);
                 }
             };
@@ -92,8 +100,7 @@
                             data[bind] = obj.val(); //2 way binding
                         });
                         obj.val(data[bind]);
-                        if(!node.link) node.link = {};
-                        node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
+                        node.addLink(bind, bind, node, obj);
                     }
 
                     if(obj.attr('jqcOn') && (eachData || !obj.parents().is('[jqcEach]'))){
@@ -187,6 +194,7 @@
                         obj.parent_node = node;
                         childNode.parent_obj = obj;
                         childNode.onReload();
+                        console.log("connect " + childName);
                         obj.html(childNode);
                     }else{
                         obj.parent_node = node;
@@ -197,23 +205,26 @@
             node.loopObjs(tmpObj);
             data.update = function(){
                 console.log("data checking");
+                console.log(node.link);
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
                             if(node.link && node.link[k]){
-                                var destField = node.link[k].destField;
-                                var targetNode = node.link[k].targetNode;
-                                var targetObj = node.link[k].targetObj || 0;
-                                targetNode.set(destField, v);
-                                console.log("data changed " + destField);
-                                if(targetObj){
-                                    //console.log("quick load data");
-                                    if(targetObj.is("input,select,textarea")) targetObj.val(v); 
-                                    else targetObj.text(v);
-                                }else nodes.push(targetNode); //re-render
-                                targetNode.copy(destField, v);   
-                                if(targetNode != node) node.copy(k, v);      
+                                $.each(node.link[k], function(i, event){
+                                    var destField = event.destField;
+                                    var targetNode = event.targetNode;
+                                    var targetObj = event.targetObj || 0;
+                                    targetNode.set(destField, v);
+                                    console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                    if(targetObj){
+                                        console.log("quick load data");
+                                        if(targetObj.is("input,select,textarea")) targetObj.val(v); 
+                                        else targetObj.text(v);
+                                    }else nodes.push(targetNode); //re-render                               
+                                    targetNode.copy(destField, v);   
+                                    if(targetNode != node) node.copy(k, v); 
+                                });     
                             }                 
                         }
                     }
