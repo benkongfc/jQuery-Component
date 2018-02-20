@@ -1,4 +1,4 @@
-jQuery(function($){
+(function($){
     $.templates = {};
     $.templates_deferred = {};
     $.nodes = {};
@@ -217,7 +217,6 @@ jQuery(function($){
             console.log("load " + name);
             node.parent_obj.html(node);
         });  
-    };         
-    loop($('#app'), null, 'app');
-    loop($('#appTodo'), null, 'appTodo');
-});
+    };  
+    window.jqcLoop = loop;       
+})(jQuery);
