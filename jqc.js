@@ -81,8 +81,8 @@
 
             //init tags
             var templates_counter = {};
-            node.loopObjs = function(objs, eachData){
-                eachData = eachData || 0;
+            node.loopObjs = function(objs, eachData1){
+                var eachData = eachData1 || 0;
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
                     obj = $(obj);   
 
@@ -96,11 +96,12 @@
                         node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
                     }
 
-                    if(obj.attr('jqcOn')){
+                    if(obj.attr('jqcOn') && (eachData || !obj.parents().is('[jqcEach]'))){
                         var val = eval('e={'+obj.attr('jqcOn')+'}');
                         $.each(val, function(onKey, onVal){
                             obj.on(onKey, function(){
                                 $.each(onVal, function(vk, vv){
+                                    vv = vv.replace("{.}", `"${eachData}"`);
                                     if(vk != 'fire'){
                                         data[vk] = vv;
                                         data.update(); 

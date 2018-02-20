@@ -2,7 +2,7 @@
 <div jqcIf="searchs.length">
     <h4>Recent searchs</h4>
     <ul>
-        <li jqcEach="searchs"><span jqcText="{.}"></span><!--<a href="javascript:;" jqcOn="click: {fire: 'searchRecent({.})'}" jqcText="{.}"></a>--></li>
+        <li jqcEach="searchs"><a href="javascript:;" jqcOn="click: {fire: 'searchRecent({.})'}" jqcText="{.}"></a></li>
     </ul>
 </div>
 <div jqc="search_bar" jqcCallback='search:searchPost'></div>
@@ -40,6 +40,9 @@
                 }
             });
             this.searchs.push(searchBy + " -> " + txt);
+        },
+        searchRecent: function(txt){
+            console.log(txt);
         }
     };
 })(jQuery);
