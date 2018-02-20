@@ -218,5 +218,6 @@ jQuery(function($){
             node.parent_obj.html(node);
         });  
     };         
-    loop($('[jqc]'), null, 'app');
+    loop($('#app'), null, 'app');
+    loop($('#appTodo'), null, 'appTodo');
 });
