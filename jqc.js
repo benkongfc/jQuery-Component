@@ -1,8 +1,10 @@
 jQuery(function($){
     $.templates = {};
     $.templates_deferred = {};
-    var loop = function(parent_obj, initData){
+    $.nodes = {};
+    var loop = function(parent_obj, initData, nodeId){
         initData = initData || 0;
+        nodeId = nodeId || '';
         var name = parent_obj.attr("jqc");
         if(!$.templates[name] && !$.templates_deferred[name]){
             $.templates_deferred[name] = $.Deferred();
@@ -26,6 +28,8 @@ jQuery(function($){
             }
             if(initData) data = initData;
             var node = $(html);
+            node.parent_obj = parent_obj;
+            if(nodeId) $.nodes[nodeId] = node;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
@@ -47,7 +51,7 @@ jQuery(function($){
                 return data[k];
             };
             node.reload = function() { //slow func
-                loop(parent_obj, data);
+                loop(node.parent_obj, data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
                 //console.log("addLink " + field);
@@ -63,15 +67,16 @@ jQuery(function($){
             }
 
             //linking
-            if(parent_obj.is('[jqcLink]')){ //REVERSE linking
-                var field = parent_obj.attr('jqcLink').split(":")[0];
-                var destField = parent_obj.attr('jqcLink').split(":")[1];
-                var targetNode = parent_obj.parent_node;
+            if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
+                var field = node.parent_obj.attr('jqcLink').split(":")[0];
+                var destField = node.parent_obj.attr('jqcLink').split(":")[1];
+                var targetNode = node.parent_obj.parent_node;
                 targetNode.addLink(field, destField, node);
                 data[destField] = targetNode.get(field);
             }
 
-            //init event
+            //init tags
+            var templates_counter = {};
             tmpObj.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
                 obj = $(obj);   
 
@@ -94,7 +99,7 @@ jQuery(function($){
                                     data.update(); 
                                 }else{ //fire functions
                                     if(vv.substr(0, 7) == 'parent.'){
-                                        eval("parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
+                                        eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
                                     }else{
                                         for (var i in data) {
                                             if(!(data[i] instanceof Function))
@@ -160,8 +165,18 @@ jQuery(function($){
             tmpObj.find('[jqc]').each(function(k, obj){
                 obj = $(obj);
                 if(obj.is("[jqcEach]")) return;
-                obj.parent_node = node;
-                loop(obj);
+                var childName = obj.attr('jqc');
+                templates_counter[childName] = templates_counter[childName] || 0;
+                templates_counter[childName]++;
+                var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
+                if($.nodes[nodeFullId]){
+                    obj.parent_node = node;
+                    $.nodes[nodeFullId].parent_obj = obj;
+                    obj.html($.nodes[nodeFullId]);
+                }else{
+                    obj.parent_node = node;
+                    loop(obj, null, nodeFullId);
+                }
             });
             data.update = function(){
                 console.log("data checking");
@@ -193,7 +208,7 @@ jQuery(function($){
             };
 
             console.log("load " + name);
-            parent_obj.html(node);
+            node.parent_obj.html(node);
         });  
     };         
     loop($('[jqc]'));
