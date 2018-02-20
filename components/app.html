@@ -24,7 +24,8 @@
                 users = data;
             })
         },
-        searchPost: function(searchBy, txt) {
+        searchPost: function(searchBy, txt, recent) {
+            if(recent !== false) recent = true;
             var This = this;
             this.filteredPosts = [];
             $.each(posts, function(idx ,post){
@@ -39,10 +40,11 @@
                     This.filteredPosts.push(post);
                 }
             });
-            this.searchs.push(searchBy + " -> " + txt);
+            if(recent)
+                this.searchs.push(searchBy + " -> " + txt);
         },
         searchRecent: function(txt){
-            this.searchPost(txt.split(" -> ")[0], txt.split(" -> ")[1]);
+            this.searchPost(txt.split(" -> ")[0], txt.split(" -> ")[1], false);
         }
     };
 })(jQuery);
