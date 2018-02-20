@@ -81,110 +81,119 @@
 
             //init tags
             var templates_counter = {};
-            tmpObj.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
-                obj = $(obj);   
+            node.loopObjs = function(objs, eachData){
+                eachData = eachData || 0;
+                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
+                    obj = $(obj);   
 
-                if(obj.attr('jqcBind')){
-                    var bind = obj.attr('jqcBind');
-                    obj.change(function(){
-                        data[bind] = obj.val(); //2 way binding
-                    });
-                    obj.val(data[bind]);
-                    if(!node.link) node.link = {};
-                    node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
-                }
+                    if(obj.attr('jqcBind')){
+                        var bind = obj.attr('jqcBind');
+                        obj.change(function(){
+                            data[bind] = obj.val(); //2 way binding
+                        });
+                        obj.val(data[bind]);
+                        if(!node.link) node.link = {};
+                        node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
+                    }
 
-                if(obj.attr('jqcOn')){
-                    var val = eval('e={'+obj.attr('jqcOn')+'}');
-                    $.each(val, function(onKey, onVal){
-                        obj.on(onKey, function(){
-                            $.each(onVal, function(vk, vv){
-                                if(vk != 'fire'){
-                                    data[vk] = vv;
-                                    data.update(); 
-                                }else{ //fire functions
-                                    if(vv.substr(0, 7) == 'parent.'){
-                                        eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
-                                    }else{
-                                        for (var i in data) {
-                                            if(!(data[i] instanceof Function))
-                                                eval("var " + i + " = '" + data[i] + "'");
+                    if(obj.attr('jqcOn')){
+                        var val = eval('e={'+obj.attr('jqcOn')+'}');
+                        $.each(val, function(onKey, onVal){
+                            obj.on(onKey, function(){
+                                $.each(onVal, function(vk, vv){
+                                    if(vk != 'fire'){
+                                        data[vk] = vv;
+                                        data.update(); 
+                                    }else{ //fire functions
+                                        if(vv.substr(0, 7) == 'parent.'){
+                                            eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
+                                        }else{
+                                            for (var i in data) {
+                                                if(!(data[i] instanceof Function))
+                                                    eval("var " + i + " = '" + data[i] + "'");
+                                            }
+                                            eval("data." + vv + ";data.update()");                           
                                         }
-                                        eval("data." + vv + ";data.update()");                           
                                     }
-                                }
+                                });
                             });
                         });
-                    });
-                }
+                    }
 
-                if(obj.attr('jqcCallback')){
-                    var val = obj.attr('jqcCallback').split(":");
-                    data[val[0]] = data[val[1]];
-                }
+                    if(obj.attr('jqcCallback')){
+                        var val = obj.attr('jqcCallback').split(":");
+                        data[val[0]] = data[val[1]];
+                    }
 
-                if(obj.attr('jqcEach')){
-                    var each = obj.attr('jqcEach');
-                    node.addLink(each);
-                    var html = obj[0].outerHTML;
-                    var bFirst = true;
-                    $.each(data[each], function(kk, vv){
-                        if(!bFirst){
-                            var new_obj = $(html);
-                            obj.after(new_obj);
-                            obj = new_obj;
+                    if(obj.attr('jqcEach')){
+                        var each = obj.attr('jqcEach');
+                        node.addLink(each);
+                        var html = obj[0].outerHTML;
+                        var bFirst = true;
+                        $.each(data[each], function(kk, vv){
+                            if(!bFirst){
+                                var new_obj = $(html);
+                                obj.after(new_obj);
+                                obj = new_obj;
+                            }
+                            if(obj.attr('jqc'))
+                                loop(obj, vv);
+                            else 
+                                node.loopObjs(obj, vv);
+                            bFirst = false;
+                        });
+                    }
+
+                    if(obj.attr('jqcIf')){
+                        var code = obj.attr('jqcIf');
+                        node.addLink(parseFieldName(code));
+                        var b = false;
+                        for (var i in data) {
+                            if(!(data[i] instanceof Function))
+                                eval("var " + i + " = '" + data[i] + "'");
                         }
-                        if(obj.attr('jqcText') == '.') obj.text(vv); 
-                        else if(obj.attr('jqc')) loop(obj, vv);
-                        bFirst = false;
-                    });
-                }
-
-                if(obj.attr('jqcIf')){
-                    var code = obj.attr('jqcIf');
-                    node.addLink(parseFieldName(code));
-                    var b = false;
-                    for (var i in data) {
-                        if(!(data[i] instanceof Function))
-                            eval("var " + i + " = '" + data[i] + "'");
+                        eval("b = (" + code + ")");
+                        if(!b){
+                            var i = $.inArray(obj[0], node);
+                            if(i > -1){
+                                obj.remove();
+                                node.splice(i,1); //node is another array having this obj, so have to manually remove it
+                            }else obj.remove();
+                        }
                     }
-                    eval("b = (" + code + ")");
-                    if(!b){
-                        var i = $.inArray(obj[0], node);
-                        if(i > -1){
-                            obj.remove();
-                            node.splice(i,1); //node is another array having this obj, so have to manually remove it
-                        }else obj.remove();
-                    }
-                }
 
-                if(obj.attr('jqcText')){
-                    if(!obj.attr('jqcEach')){
-                        obj.text(eval("data." + obj.attr("jqcText")));
-                        node.addLink(parseFieldName(obj.attr('jqcText')));
+                    if(obj.attr('jqcText')){
+                        var name = obj.attr("jqcText");
+                        if(name == '{.}'){
+                            if(eachData)obj.text(eachData);
+                        }else{
+                            obj.text(eval("data." + obj.attr("jqcText")));
+                            node.addLink(parseFieldName(obj.attr('jqcText')));
+                        }
                     }
-                }
-            });
+                });
 
-            //last order
-            tmpObj.find('[jqc]').each(function(k, obj){
-                obj = $(obj);
-                if(obj.is("[jqcEach]")) return;
-                var childName = obj.attr('jqc');
-                templates_counter[childName] = templates_counter[childName] || 0;
-                templates_counter[childName]++;
-                var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
-                if($.nodes[nodeFullId]){
-                    var childNode = $.nodes[nodeFullId];
-                    obj.parent_node = node;
-                    childNode.parent_obj = obj;
-                    childNode.onReload();
-                    obj.html(childNode);
-                }else{
-                    obj.parent_node = node;
-                    loop(obj, null, nodeFullId);
-                }
-            });
+                //last order
+                objs.find('[jqc]').each(function(k, obj){
+                    obj = $(obj);
+                    if(obj.is("[jqcEach]")) return;
+                    var childName = obj.attr('jqc');
+                    templates_counter[childName] = templates_counter[childName] || 0;
+                    templates_counter[childName]++;
+                    var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
+                    if($.nodes[nodeFullId]){
+                        var childNode = $.nodes[nodeFullId];
+                        obj.parent_node = node;
+                        childNode.parent_obj = obj;
+                        childNode.onReload();
+                        obj.html(childNode);
+                    }else{
+                        obj.parent_node = node;
+                        loop(obj, null, nodeFullId);
+                    }
+                });
+            }
+            node.loopObjs(tmpObj);
             data.update = function(){
                 console.log("data checking");
                 var nodes = [];
