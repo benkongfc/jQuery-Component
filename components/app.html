@@ -42,7 +42,7 @@
             this.searchs.push(searchBy + " -> " + txt);
         },
         searchRecent: function(txt){
-            console.log(txt);
+            this.searchPost(txt.split(" -> ")[0], txt.split(" -> ")[1]);
         }
     };
 })(jQuery);
