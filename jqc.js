@@ -14,7 +14,7 @@ jQuery(function($){
             });
         }
         $.when($.templates_deferred[name]).done(function(){
-            console.log("start " + name);
+            //console.log("start " + name);
             var html = $.templates[name];
             var script = html.match(/<script>([\S\s]*?)<\/script>/i);
             var data = data1 = {};
@@ -51,6 +51,7 @@ jQuery(function($){
                 return data[k];
             };
             node.reload = function() { //slow func
+                if(nodeId) $.nodes[nodeId] = null;
                 loop(node.parent_obj, data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
@@ -67,13 +68,16 @@ jQuery(function($){
             }
 
             //linking
-            if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
-                var field = node.parent_obj.attr('jqcLink').split(":")[0];
-                var destField = node.parent_obj.attr('jqcLink').split(":")[1];
-                var targetNode = node.parent_obj.parent_node;
-                targetNode.addLink(field, destField, node);
-                data[destField] = targetNode.get(field);
-            }
+            node.onReload = function() {
+                if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
+                    var field = node.parent_obj.attr('jqcLink').split(":")[0];
+                    var destField = node.parent_obj.attr('jqcLink').split(":")[1];
+                    var targetNode = node.parent_obj.parent_node;
+                    targetNode.addLink(field, destField, node);
+                    data[destField] = targetNode.get(field);
+                }
+            };
+            node.onReload();
 
             //init tags
             var templates_counter = {};
@@ -85,6 +89,7 @@ jQuery(function($){
                     obj.change(function(){
                         data[bind] = obj.val(); //2 way binding
                     });
+                    obj.val(data[bind]);
                     if(!node.link) node.link = {};
                     node.link[bind] = {targetNode: node, targetObj: obj, destField: bind}; //2 way binding
                 }
@@ -170,9 +175,11 @@ jQuery(function($){
                 templates_counter[childName]++;
                 var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
                 if($.nodes[nodeFullId]){
+                    var childNode = $.nodes[nodeFullId];
                     obj.parent_node = node;
-                    $.nodes[nodeFullId].parent_obj = obj;
-                    obj.html($.nodes[nodeFullId]);
+                    childNode.parent_obj = obj;
+                    childNode.onReload();
+                    obj.html(childNode);
                 }else{
                     obj.parent_node = node;
                     loop(obj, null, nodeFullId);
@@ -191,7 +198,7 @@ jQuery(function($){
                                 targetNode.set(destField, v);
                                 console.log("data changed " + destField);
                                 if(targetObj){
-                                    console.log("quick load data");
+                                    //console.log("quick load data");
                                     if(targetObj.is("input,select,textarea")) targetObj.val(v); 
                                     else targetObj.text(v);
                                 }else nodes.push(targetNode); //re-render
@@ -211,5 +218,5 @@ jQuery(function($){
             node.parent_obj.html(node);
         });  
     };         
-    loop($('[jqc]'));
+    loop($('[jqc]'), null, 'app');
 });
