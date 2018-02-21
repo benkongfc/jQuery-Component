@@ -8,7 +8,7 @@
         var name = parent_obj.attr("jqc");
         if(!$.templates[name] && !$.templates_deferred[name]){
             $.templates_deferred[name] = $.Deferred();
-            $.get(`components/${name}.html?` + Math.random().toString(), '', function (html){
+            $.get(`components/${name}.html?` + Math.random().toString(), '', function (html){ //load from cache can be qiucker
                 $.templates[name] = html;
                 $.templates_deferred[name].resolve();
             });
@@ -197,7 +197,7 @@
                         obj.parent_node = node;
                         childNode.parent_obj = obj;
                         childNode.onReload();
-                        console.log("connect " + childName);
+                        //console.log("connect " + childName);
                         obj.html(childNode);
                     }else{
                         obj.parent_node = node;
@@ -207,8 +207,8 @@
             }
             node.loopObjs(tmpObj);
             data.update = function(){
-                console.log("data checking");
-                console.log(node.link);
+                //console.log("data checking");
+                //console.log(node.link);
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
@@ -219,9 +219,9 @@
                                     var targetNode = event.targetNode;
                                     var targetObj = event.targetObj || 0;
                                     targetNode.set(destField, v);
-                                    console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                    //console.log("data changed " + targetNode.scope("name", []) + " " + destField);
                                     if(targetObj){
-                                        console.log("quick load data");
+                                        //console.log("quick load data");
                                         if(targetObj.is("input,select,textarea")) targetObj.val(v); 
                                         else targetObj.text(v);
                                     }else nodes.push(targetNode); //re-render                               
@@ -238,7 +238,7 @@
                 })
             };
 
-            console.log("load " + name);
+            //console.log("load " + name);
             node.parent_obj.html(node);
         });  
     };  
