@@ -42,9 +42,14 @@
                 data1[k] = JSON.parse(JSON.stringify(v));
             };
             node.set = function(k, v){
-                data[k] = v;
+                if(v instanceof Object)
+                    data[k] = JSON.parse(JSON.stringify(v));
+                else
+                    data[k] = v;
             };
             node.get = function(k){
+                if(data[k] instanceof Object)
+                    return JSON.parse(JSON.stringify(data[k]));
                 return data[k];
             };
             node.reload = function() { //slow func
@@ -75,12 +80,14 @@
                 if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
                     var links = node.parent_obj.attr('jqcLink').split(",");
                     $.each(links, function(i, link){
-                        var field = link.split(":")[0].trim();
-                        var destField = link.split(":")[1].trim();
+                        var field = link.split(/<?->/)[0].trim();
+                        var destField = link.split(/<?->/)[1].trim();
                         var targetNode = node.parent_obj.parent_node;
-                        node.addLink(destField, field, targetNode); //up
+                        if(link.indexOf("<->") > -1)
+                            node.addLink(destField, field, targetNode); //up
                         targetNode.addLink(field, destField, node); //down
-                        data[destField] = targetNode.get(field);
+                        if(!initData)
+                            data[destField] = targetNode.get(field);
                     });
                 }
             };
@@ -204,7 +211,8 @@
             }
             node.loopObjs(tmpObj);
             data.update = function(){
-                console.log("data checking");
+                console.log("data checking " + name);
+                //console.log(node.link);
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
@@ -214,6 +222,7 @@
                                     var destField = event.destField;
                                     var targetNode = event.targetNode;
                                     var targetObj = event.targetObj || 0;
+                                    //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
                                     if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
                                         targetNode.set(destField, v);
                                         console.log("data changed " + targetNode.scope("name", []) + " " + destField);

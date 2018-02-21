@@ -5,17 +5,15 @@
         <li jqcEach="searchs"><a href="javascript:;" jqcOn="click: {fire: 'searchRecent({.})'}" jqcText="{.}"></a></li>
     </ul>
 </div>
-<div jqc="search_bar" jqcCallback='search:searchPost' jqcLink="searchBy:searchBy, searchTxt:txt"></div>
+<div jqc="search_bar" jqcCallback='search:searchPost' jqcLink="searchBy->searchBy, searchTxt->txt"></div>
 <div jqc="post_table"></div>
-<div jqc="post_table" jqcLink="filteredPosts:posts"></div>
+<div jqc="post_table" jqcLink="filteredPosts->posts"></div>
 
 <script>
 (function($) {
-    var posts = [];
-    var users = [];
     function loadData(posts){
         $.each(posts, function(idx ,post){
-            $.each(users, function(){
+            $.each($.users, function(){
                 if(this.id == post.userId){
                     post.user = this.name;
                     return false;
@@ -31,32 +29,28 @@
         searchTxt : '',
         init: function() {
             var This = this;
-            var p = $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
-                posts = data;
-            });
-            var u = $.get("https://jsonplaceholder.typicode.com/users", '', function(data){
-                users = data;
-            });
-            $.when(p, u).done(function() {
-                This.filteredPosts = loadData(posts);
-                if(This.update) This.update();
-            });
+            if(!$.posts){
+                var p = $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
+                    $.posts = data;
+                });
+                var u = $.get("https://jsonplaceholder.typicode.com/users", '', function(data){
+                    $.users = data;
+                });
+                $.when(p, u).done(function() {
+                    This.filteredPosts = $.posts.splice(0, 10);
+                    This.filteredPosts = loadData(This.filteredPosts);
+                    if(This.update) This.update();
+                });
+            }
         },
         searchPost: function(searchBy, txt, recent) {
             if(recent !== false) recent = true;
             var This = this;
             this.filteredPosts = [];
-            $.each(posts, function(idx ,post){
+            $.each($.posts, function(idx ,post){
                 var key = searchBy.toLowerCase();
-                if(post[key] && post[key].indexOf(txt) > -1){  
-                    $.each(users, function(){
-                        if(this.id == post.userId){
-                            post.user = this.name;
-                            return false;
-                        }
-                    });       
-                    This.filteredPosts.push(post);
-                }
+                if(post[key] && post[key].indexOf(txt) > -1) This.filteredPosts.push(post);
+                This.filteredPosts = loadData(This.filteredPosts);
             });
             if(recent)
                 this.searchs.push(searchBy + " -> " + txt);

@@ -1,5 +1,5 @@
 <h2>Todo List</h2>
-<div jqc="todo_ul" jqcLink="todos:todos"></div>
+<div jqc="todo_ul" jqcLink="todos->todos"></div>
 <div jqc="todo_input" jqcCallback="add:addTodo"></div>
 
 <script>
@@ -7,6 +7,7 @@
         return {
             todos : ['One task', 'Two task'],
             addTodo: function(todo) {
+                console.log("add");
                 this.todos.push(todo);    
             }
         }
