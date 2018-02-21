@@ -17,12 +17,15 @@
     jqc_module = {
         posts : [],
         orderBy : '',
+        init : function(){
+            //this.order();
+            //if(data.update) data.update();
+        },
         order : function(){
             var orderBy = this.orderBy;
             this.posts.sort(
                 function(x, y)
                 {
-                    console.log("order by " + orderBy);
                     return x[orderBy]>y[orderBy]?1:x[orderBy]==y[orderBy]?0:-1;
                 }
             );

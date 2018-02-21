@@ -13,18 +13,34 @@
 (function($) {
     var posts = [];
     var users = [];
-    return {
+    function loadData(posts){
+        $.each(posts, function(idx ,post){
+            $.each(users, function(){
+                if(this.id == post.userId){
+                    post.user = this.name;
+                    return false;
+                }
+            }); 
+        });
+        return posts;    
+    }
+    var m = {
         filteredPosts: [],
         searchs : [],
         searchBy : 'Title',
         searchTxt : '',
         init: function() {
-            $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
+            var This = this;
+            var p = $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
                 posts = data;
             });
-            $.get("https://jsonplaceholder.typicode.com/users", '', function(data){
+            var u = $.get("https://jsonplaceholder.typicode.com/users", '', function(data){
                 users = data;
-            })
+            });
+            $.when(p, u).done(function() {
+                This.filteredPosts = loadData(posts);
+                if(This.update) This.update();
+            });
         },
         searchPost: function(searchBy, txt, recent) {
             if(recent !== false) recent = true;
@@ -49,5 +65,6 @@
             this.searchPost(this.searchBy=txt.split(" -> ")[0], this.searchTxt=txt.split(" -> ")[1], false);
         }
     };
+    return m;
 })(jQuery);
 </script>

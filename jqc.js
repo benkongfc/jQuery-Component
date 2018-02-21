@@ -21,10 +21,7 @@
             if(script){
                 script = script[1];
                 html = html.replace(/<script>([\S\s]*?)<\/script>/i);
-                if(!initData){
-                    data = eval(script);
-                    if(data.init) data.init();
-                }
+                data = eval(script);
             }
             if(initData) data = initData;
             var node = $(html);
@@ -55,7 +52,6 @@
                 loop(node.parent_obj, data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
-                //console.log("addLink " + field);
                 destField = destField || field;
                 localNode = localNode || node;
                 obj = obj || 0;
@@ -82,14 +78,15 @@
                         var field = link.split(":")[0].trim();
                         var destField = link.split(":")[1].trim();
                         var targetNode = node.parent_obj.parent_node;
-                        node.addLink(destField, field, targetNode);
-                        targetNode.addLink(field, destField, node); 
+                        node.addLink(destField, field, targetNode); //up
+                        targetNode.addLink(field, destField, node); //down
                         data[destField] = targetNode.get(field);
                     });
                 }
             };
             node.onReload();
-
+            if(data.init) data.init();
+            
             //init tags
             var templates_counter = {};
             node.loopObjs = function(objs, eachData1){
@@ -197,7 +194,7 @@
                         obj.parent_node = node;
                         childNode.parent_obj = obj;
                         childNode.onReload();
-                        //console.log("connect " + childName);
+                        console.log("connect " + childName);
                         obj.html(childNode);
                     }else{
                         obj.parent_node = node;
@@ -207,8 +204,7 @@
             }
             node.loopObjs(tmpObj);
             data.update = function(){
-                //console.log("data checking");
-                //console.log(node.link);
+                console.log("data checking");
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
@@ -218,15 +214,17 @@
                                     var destField = event.destField;
                                     var targetNode = event.targetNode;
                                     var targetObj = event.targetObj || 0;
-                                    targetNode.set(destField, v);
-                                    //console.log("data changed " + targetNode.scope("name", []) + " " + destField);
-                                    if(targetObj){
-                                        //console.log("quick load data");
-                                        if(targetObj.is("input,select,textarea")) targetObj.val(v); 
-                                        else targetObj.text(v);
-                                    }else nodes.push(targetNode); //re-render                               
-                                    targetNode.copy(destField, v);   
-                                    if(targetNode != node) node.copy(k, v); 
+                                    if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
+                                        targetNode.set(destField, v);
+                                        console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                        if(targetObj){
+                                            console.log("quick load data");
+                                            if(targetObj.is("input,select,textarea")) targetObj.val(v); 
+                                            else targetObj.text(v);
+                                        }else nodes.push(targetNode); //re-render                               
+                                        targetNode.copy(destField, v);   
+                                        if(targetNode != node) node.copy(k, v); 
+                                    }
                                 });     
                             }                 
                         }
@@ -238,7 +236,7 @@
                 })
             };
 
-            //console.log("load " + name);
+            console.log("load " + name);
             node.parent_obj.html(node);
         });  
     };  
