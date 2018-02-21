@@ -5,7 +5,7 @@
         <li jqcEach="searchs"><a href="javascript:;" jqcOn="click: {fire: 'searchRecent({.})'}" jqcText="{.}"></a></li>
     </ul>
 </div>
-<div jqc="search_bar" jqcCallback='search:searchPost' jqcLink="searchBy:searchBy"></div>
+<div jqc="search_bar" jqcCallback='search:searchPost' jqcLink="searchBy:searchBy, searchTxt:txt"></div>
 <div jqc="post_table"></div>
 <div jqc="post_table" jqcLink="filteredPosts:posts"></div>
 
@@ -17,6 +17,7 @@
         filteredPosts: [],
         searchs : [],
         searchBy : 'Title',
+        searchTxt : '',
         init: function() {
             $.get('https://jsonplaceholder.typicode.com/posts', '', function(data){
                 posts = data;
@@ -45,7 +46,7 @@
                 this.searchs.push(searchBy + " -> " + txt);
         },
         searchRecent: function(txt){
-            this.searchPost(txt.split(" -> ")[0], txt.split(" -> ")[1], false);
+            this.searchPost(this.searchBy=txt.split(" -> ")[0], this.searchTxt=txt.split(" -> ")[1], false);
         }
     };
 })(jQuery);

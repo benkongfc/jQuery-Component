@@ -77,12 +77,15 @@
             //linking
             node.onReload = function() {
                 if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
-                    var field = node.parent_obj.attr('jqcLink').split(":")[0];
-                    var destField = node.parent_obj.attr('jqcLink').split(":")[1];
-                    var targetNode = node.parent_obj.parent_node;
-                    node.addLink(destField, field, targetNode);
-                    targetNode.addLink(field, destField, node); 
-                    data[destField] = targetNode.get(field);
+                    var links = node.parent_obj.attr('jqcLink').split(",");
+                    $.each(links, function(i, link){
+                        var field = link.split(":")[0].trim();
+                        var destField = link.split(":")[1].trim();
+                        var targetNode = node.parent_obj.parent_node;
+                        node.addLink(destField, field, targetNode);
+                        targetNode.addLink(field, destField, node); 
+                        data[destField] = targetNode.get(field);
+                    });
                 }
             };
             node.onReload();
