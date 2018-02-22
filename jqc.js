@@ -1,10 +1,8 @@
 (function($){
     $.templates = {};
     $.templates_deferred = {};
-    $.nodes = {};
-    var loop = function(parent_obj, initData, nodeId){
+    var loop = function(parent_obj, initData){
         initData = initData || 0;
-        nodeId = nodeId || '';
         var name = parent_obj.attr("jqc");
         if(!$.templates[name] && !$.templates_deferred[name]){
             $.templates_deferred[name] = $.Deferred();
@@ -22,11 +20,11 @@
                 script = script[1];
                 html = html.replace(/<script>([\S\s]*?)<\/script>/i);
                 data = eval(script);
+                data.bFirstInit = true;
             }
             if(initData) data = initData;
             var node = $(html);
             node.parent_obj = parent_obj;
-            if(nodeId) $.nodes[nodeId] = node;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
@@ -53,8 +51,7 @@
                 return data[k];
             };
             node.reload = function() { //slow func
-                if(nodeId) $.nodes[nodeId] = null;
-                loop(node.parent_obj, data, nodeId);
+                loop(node.parent_obj, data);
             }
             node.addLink = function(field, destField, localNode, obj){
                 destField = destField || field;
@@ -86,16 +83,16 @@
                         if(link.indexOf("<->") > -1)
                             node.addLink(destField, field, targetNode); //up
                         targetNode.addLink(field, destField, node); //down
-                        if(!initData)
+                        if(data.bFirstInit)
                             data[destField] = targetNode.get(field);
                     });
                 }
             };
             node.onReload();
             if(data.init) data.init();
-            
+            if(name == 'search_bar')
+                console.log(data);
             //init tags
-            var templates_counter = {};
             node.loopObjs = function(objs, eachData1){
                 var eachData = eachData1 || 0;
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
@@ -192,21 +189,8 @@
                 objs.find('[jqc]').each(function(k, obj){
                     obj = $(obj);
                     if(obj.is("[jqcEach]")) return;
-                    var childName = obj.attr('jqc');
-                    templates_counter[childName] = templates_counter[childName] || 0;
-                    templates_counter[childName]++;
-                    var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
-                    if($.nodes[nodeFullId]){
-                        var childNode = $.nodes[nodeFullId];
-                        obj.parent_node = node;
-                        childNode.parent_obj = obj;
-                        childNode.onReload();
-                        console.log("connect " + childName);
-                        obj.html(childNode);
-                    }else{
-                        obj.parent_node = node;
-                        loop(obj, null, nodeFullId);
-                    }
+                    obj.parent_node = node;
+                    loop(obj, null);
                 });
             }
             node.loopObjs(tmpObj);
@@ -246,6 +230,8 @@
             };
 
             console.log("load " + name);
+            //console.log(node.parent_obj);
+            data.bFirstInit = false;
             node.parent_obj.html(node);
         });  
     };  
