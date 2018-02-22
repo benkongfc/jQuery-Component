@@ -1,10 +1,13 @@
 (function($){
     $.templates = {};
     $.templates_deferred = {};
+<<<<<<< HEAD
     var datas = {};
     var loop = function(parent_obj, initData, nodeId){
+=======
+    var loop = function(parent_obj, initData){
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
         initData = initData || 0;
-        nodeId = nodeId || '';
         var name = parent_obj.attr("jqc");
         if(!$.templates[name] && !$.templates_deferred[name]){
             $.templates_deferred[name] = $.Deferred();
@@ -24,7 +27,10 @@
             else if(script){
                 script = script[1];           
                 data = eval(script);
+<<<<<<< HEAD
                 if(nodeId) datas[nodeId] = data;
+=======
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
                 data.bFirstInit = true;
             }
             var node = $(html);
@@ -55,8 +61,12 @@
                 return data[k];
             };
             node.reload = function() { //slow func
+<<<<<<< HEAD
                 //if(nodeId) $.datas[nodeId] = null;
                 loop(node.parent_obj, data, nodeId);
+=======
+                loop(node.parent_obj, data);
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
             }
             node.addLink = function(field, destField, localNode, obj){
                 destField = destField || field;
@@ -88,8 +98,12 @@
                         if(link.indexOf("<->") > -1)
                             node.addLink(destField, field, targetNode); //up
                         targetNode.addLink(field, destField, node); //down
+<<<<<<< HEAD
                         if(data.bFirstInit){
                             console.log("loadData from up link");
+=======
+                        if(data.bFirstInit)
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
                             data[destField] = targetNode.get(field);
                         }
                     });
@@ -97,9 +111,13 @@
             };
             node.onReload();
             if(data.init) data.init();
+<<<<<<< HEAD
             console.log(data);
+=======
+            if(name == 'search_bar')
+                console.log(data);
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
             //init tags
-            var templates_counter = {};
             node.loopObjs = function(objs, eachData1){
                 var eachData = eachData1 || 0;
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
@@ -200,6 +218,7 @@
                 objs.find('[jqc]').each(function(k, obj){
                     obj = $(obj);
                     if(obj.is("[jqcEach]")) return;
+<<<<<<< HEAD
                     var childName = obj.attr('jqc');
                     templates_counter[childName] = templates_counter[childName] || 0;
                     templates_counter[childName]++;
@@ -214,6 +233,10 @@
                         obj.parent_node = node;
                         loop(obj, null, nodeFullId);
                     }
+=======
+                    obj.parent_node = node;
+                    loop(obj, null);
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
                 });
             }
             node.loopObjs(tmpObj);
@@ -256,6 +279,10 @@
             };
 
             console.log("load " + name);
+<<<<<<< HEAD
+=======
+            //console.log(node.parent_obj);
+>>>>>>> f8bf249c429d7766bec163094bf472e178d754ff
             data.bFirstInit = false;
             node.parent_obj.html(node);
         });  
