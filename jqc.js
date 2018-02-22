@@ -100,6 +100,7 @@
             //init tags
             node.loopObjs = function(objs, eachData1){
                 var eachData = eachData1 || 0;
+                templates_counter = {};
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
                     obj = $(obj);   
 
