@@ -1,7 +1,7 @@
 (function($){
     $.templates = {};
     $.templates_deferred = {};
-    $.nodes = {};
+    var datas = {};
     var loop = function(parent_obj, initData, nodeId){
         initData = initData || 0;
         nodeId = nodeId || '';
@@ -17,16 +17,18 @@
             //console.log("start " + name);
             var html = $.templates[name];
             var script = html.match(/<script>([\S\s]*?)<\/script>/i);
-            var data = data1 = {};
-            if(script){
-                script = script[1];
-                html = html.replace(/<script>([\S\s]*?)<\/script>/i);
-                data = eval(script);
-            }
+            html = html.replace(/<script>([\S\s]*?)<\/script>/i);
+            var data = {};
+            var data1 = {};
             if(initData) data = initData;
+            else if(script){
+                script = script[1];           
+                data = eval(script);
+                if(nodeId) datas[nodeId] = data;
+                data.bFirstInit = true;
+            }
             var node = $(html);
             node.parent_obj = parent_obj;
-            if(nodeId) $.nodes[nodeId] = node;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
@@ -53,7 +55,7 @@
                 return data[k];
             };
             node.reload = function() { //slow func
-                if(nodeId) $.nodes[nodeId] = null;
+                //if(nodeId) $.datas[nodeId] = null;
                 loop(node.parent_obj, data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
@@ -86,14 +88,16 @@
                         if(link.indexOf("<->") > -1)
                             node.addLink(destField, field, targetNode); //up
                         targetNode.addLink(field, destField, node); //down
-                        if(!initData)
+                        if(data.bFirstInit){
+                            console.log("loadData from up link");
                             data[destField] = targetNode.get(field);
+                        }
                     });
                 }
             };
             node.onReload();
             if(data.init) data.init();
-            
+            console.log(data);
             //init tags
             var templates_counter = {};
             node.loopObjs = function(objs, eachData1){
@@ -105,6 +109,8 @@
                         var bind = obj.attr('jqcBind');
                         obj.change(function(){
                             data[bind] = obj.val(); //2 way binding
+                            console.log(data);
+                            console.log(datas[nodeId]);
                         });
                         obj.val(data[bind]);
                         node.addLink(bind, bind, node, obj);
@@ -114,6 +120,8 @@
                         var val = eval('e={'+obj.attr('jqcOn')+'}');
                         $.each(val, function(onKey, onVal){
                             obj.on(onKey, function(){
+                                console.log(data);
+                                console.log(datas[nodeId]);
                                 $.each(onVal, function(vk, vv){
                                     vv = vv.replace("{.}", `"${eachData}"`);
                                     if(vk != 'fire'){
@@ -196,14 +204,13 @@
                     templates_counter[childName] = templates_counter[childName] || 0;
                     templates_counter[childName]++;
                     var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
-                    if($.nodes[nodeFullId]){
-                        var childNode = $.nodes[nodeFullId];
+                    if(datas[nodeFullId]){
+                        console.log("has data");
+                        console.log(datas);
                         obj.parent_node = node;
-                        childNode.parent_obj = obj;
-                        childNode.onReload();
-                        console.log("connect " + childName);
-                        obj.html(childNode);
+                        loop(obj, datas[nodeFullId], nodeFullId); //load data
                     }else{
+                        console.log("no data");
                         obj.parent_node = node;
                         loop(obj, null, nodeFullId);
                     }
@@ -240,12 +247,16 @@
                     }
                 });
                 nodes = $.unique(nodes);
+                /*nodes.sort(function(a, b){
+                    return a.parent_obj.find(b.parent_obj)?-1:1;
+                })*/
                 $.each(nodes, function(){
                     this.reload();
                 })
             };
 
             console.log("load " + name);
+            data.bFirstInit = false;
             node.parent_obj.html(node);
         });  
     };  
