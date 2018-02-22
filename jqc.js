@@ -63,13 +63,7 @@
                 obj = obj || 0;
                 if(!node.link) node.link = {};
                 if(!node.link[field]) node.link[field] = [];
-                var b = false;
-                $.each(node.link[field], function(i, v){
-                    if(v.targetNode == localNode && v.targetObj == obj && v.destField == destField)
-                        b = true;
-                });
-                if(!b)
-                    node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
+                node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
             }
 
             var parseFieldName = function(str){
@@ -96,7 +90,6 @@
             };
             node.onReload();
             if(data.init) data.init();
-            console.log(data);
             //init tags
             var templates_counter = {};
             node.loopObjs = function(objs, eachData1){
@@ -108,8 +101,6 @@
                         var bind = obj.attr('jqcBind');
                         obj.change(function(){
                             data[bind] = obj.val(); //2 way binding
-                            console.log(data);
-                            console.log(datas[nodeId]);
                         });
                         obj.val(data[bind]);
                         node.addLink(bind, bind, node, obj);
@@ -218,11 +209,14 @@
             node.loopObjs(tmpObj);
             data.update = function(){
                 console.log("data checking " + name);
-                //console.log(node.link);
+                console.log(data);
+                console.log(data1);
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function)){
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
+                            console.log("data not eq ");
+                            console.log(node.link[k]);
                             if(node.link && node.link[k]){
                                 $.each(node.link[k], function(i, event){
                                     var destField = event.destField;
