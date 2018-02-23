@@ -23,6 +23,8 @@
             else if(script){
                 script = script[1];           
                 data = eval(script);
+                if(!data) data = {};
+                if(data.load) data.load();
                 if(nodeId) datas[nodeId] = data;
                 data.bFirstInit = true;
             }
@@ -34,7 +36,7 @@
             //local scope function
             node.scope = function(func, remoteData){
                 for (var i in remoteData) {
-                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = '" + remoteData[i] + "'");
+                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = (" + JSON.stringify(remoteData[i]) + ")");
                 }
                 return eval(func); //local scope
             };
@@ -123,7 +125,7 @@
                                         }else{
                                             for (var i in data) {
                                                 if(!(data[i] instanceof Function))
-                                                    eval("var " + i + " = '" + data[i] + "'");
+                                                    eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                                             }
                                             eval("data." + vv + ";data.update()");                           
                                         }
@@ -163,11 +165,12 @@
                         var b = false;
                         for (var i in data) {
                             if(!(data[i] instanceof Function))
-                                eval("var " + i + " = '" + data[i] + "'");
+                                eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                         }
-                        eval("b = (" + code + ")");
+                        b = eval(code);
                         if(!b){
                             var i = $.inArray(obj[0], node);
+                            console.log("if remove");
                             if(i > -1){
                                 obj.remove();
                                 node.splice(i,1); //node is another array having this obj, so have to manually remove it
@@ -178,9 +181,9 @@
                     if(obj.attr('jqcText')){
                         var name = obj.attr("jqcText");
                         if(name == '{.}'){
-                            if(eachData)obj.text(eachData);
+                            if(eachData)obj.html(eachData);
                         }else{
-                            obj.text(eval("data." + obj.attr("jqcText")));
+                            obj.html(eval("data." + obj.attr("jqcText")));
                             node.addLink(parseFieldName(obj.attr('jqcText')));
                         }
                     }
@@ -251,6 +254,7 @@
             console.log("load " + name);
             data.bFirstInit = false;
             node.parent_obj.html(node);
+            if(data.after) data.after();
         });  
     };  
     window.jqcLoop = function(id, appName){
