@@ -11,16 +11,14 @@
     <form class="form-inline my-2 my-lg-0">
         <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
     </form>
-    <div class="starter-template">
     <!-- Swiper -->
-        <div jqcIf="deals.length == 0">Loading...</div>
-        <div class="swiper-container alldeals">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" jqc="cmd_dealslide" jqcEach="deals"></div>
-            </div>
-            <!-- Add Pagination -->
-            <div class="swiper-pagination"></div>
+    <div jqcIf="deals.length == 0">Loading...</div>
+    <div class="swiper-container alldeals">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" jqc="cmd_dealslide" jqcEach="deals"></div>
         </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
     </div>
 
 </main><!-- /.container -->
@@ -39,9 +37,29 @@
         load: function() {
             var This = this;
             $.get("http://cmd.local/wp-json/wp/v2/cruise/?_embed&per_page=10", {}, function(data){
-                This.deals = data;
+                This.deals = This.processData(data);
                 This.update();
             });
+        },
+        processData: function(data){
+            data.forEach(function(d){
+                var images = d.acf.images;
+                images = images.match(/src=[\'\"](.*?)[\'\"]/);
+                d.thumburl = images[1].replace("http://www.firstclass.com.au", 
+                    "https://d2tu0namn5fw5o.cloudfront.net");
+                d.thumbul = [];
+                var dep = n = f = c = p = 0;
+                dep = moment(d.acf.departure_dates[0].departure_date, "YYYYMMDD").format('D MMM YYYY');
+                n = d.acf.duration;
+                f = d.acf.ports.split(",").shift();
+                c = d.acf.ports.split(",").pop();
+                p = `$${d.acf.selling_price}`;
+                d.thumbul.push(`Departs ${dep}, ${n} nights`);
+                d.thumbul.push(`Travel from ${f} to ${c}`);
+                d.thumbul.push(d.acf.saving_text);
+                d.thumbul.push(`Book now from ${p}`);
+            });
+            return data;
         }
     }
 </script>
