@@ -1,4 +1,5 @@
 (function($){
+    console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
@@ -25,9 +26,11 @@
                 data = eval(script);
                 if(!data) data = {};
                 if(data.load) data.load();
-                if(nodeId) datas[nodeId] = data;
                 data.bFirstInit = true;
             }
+            if(nodeId) datas[nodeId] = data;
+            if(name != 'post_row' && name != 'post_table')
+                console.log(data);
             var node = $(html);
             node.parent_obj = parent_obj;
             var tmpObj = $('<div></div>').html(node);
@@ -114,6 +117,7 @@
                             obj.on(onKey, function(){
                                 console.log(data);
                                 console.log(datas[nodeId]);
+                                console.log(datas.app_search_bar_1);
                                 $.each(onVal, function(vk, vv){
                                     vv = vv.replace("{.}", `"${eachData}"`);
                                     if(vk != 'fire'){
@@ -170,7 +174,7 @@
                         b = eval(code);
                         if(!b){
                             var i = $.inArray(obj[0], node);
-                            console.log("if remove");
+                            console.log("if remove " + code);
                             if(i > -1){
                                 obj.remove();
                                 node.splice(i,1); //node is another array having this obj, so have to manually remove it
@@ -199,7 +203,7 @@
                     var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
                     if(datas[nodeFullId]){
                         console.log("has data");
-                        console.log(datas);
+                        console.log(datas[nodeFullId]);
                         obj.parent_node = node;
                         loop(obj, datas[nodeFullId], nodeFullId); //load data
                     }else{
@@ -214,38 +218,57 @@
                 console.log("data checking " + name);
                 console.log(data);
                 console.log(data1);
+                console.log(datas.app_search_bar_1);
                 var nodes = [];
                 $.each(data, function(k, v){
-                    if(!(v instanceof Function)){
+                    if(!(v instanceof Function) && k != 'bFirstInit'){
+                        console.log("data checking field " + k);
+                        var bChanged = false;
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
-                            console.log("data not eq ");
-                            console.log(node.link[k]);
-                            if(node.link && node.link[k]){
-                                $.each(node.link[k], function(i, event){
-                                    var destField = event.destField;
-                                    var targetNode = event.targetNode;
-                                    var targetObj = event.targetObj || 0;
-                                    //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
-                                    if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
-                                        targetNode.set(destField, v);
-                                        console.log("data changed " + targetNode.scope("name", []) + " " + destField);
-                                        if(targetObj){
-                                            console.log("quick load data");
-                                            if(targetObj.is("input,select,textarea")) targetObj.val(v); 
-                                            else targetObj.text(v);
-                                        }else nodes.push(targetNode); //re-render                               
-                                        targetNode.copy(destField, v);   
-                                        if(targetNode != node) node.copy(k, v); 
-                                    }
-                                });     
-                            }                 
+                            console.log("data not eq "+k);
+                            bChanged = true;
+                        }else{
+                            $.each(node.link[k], function(i, event){
+                                var destField = event.destField;
+                                var targetNode = event.targetNode;
+                                var targetObj = event.targetObj || 0;
+                                if(targetNode != node)
+                                    bChanged = true; //always update others node link
+                            });
                         }
-                    }
+                        if(bChanged && node.link && node.link[k]){
+                            console.log("data not eq link "+k);
+                            $.each(node.link[k], function(i, event){
+                                var destField = event.destField;
+                                var targetNode = event.targetNode;
+                                var targetObj = event.targetObj || 0;
+                                //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
+                                if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
+                                    targetNode.set(destField, v);
+                                    console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                    if(targetObj){
+                                        console.log("quick load data");
+                                        if(targetObj.is("input,select,textarea")) targetObj.val(v); 
+                                        else targetObj.text(v);
+                                    }else nodes.push(targetNode); //re-render                               
+                                    targetNode.copy(destField, v);   
+                                    node.copy(k, v); //make signal off
+                                }
+                            });     
+                        }
+                    }                                       
                 });
                 nodes = $.unique(nodes);
-                /*nodes.sort(function(a, b){
-                    return a.parent_obj.find(b.parent_obj)?-1:1;
-                })*/
+                nodes = nodes.filter(function(i){
+                    var b = true;
+                    $.each(nodes, function(z, j){
+                        j.each(function(z, k){
+                            if(k == i.parent()[0])
+                                b = false;
+                        });
+                    });
+                    return b;
+                });
                 $.each(nodes, function(){
                     this.reload();
                 })
