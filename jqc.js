@@ -145,7 +145,9 @@
                         node.addLink(each);
                         var html = obj[0].outerHTML;
                         var bFirst = true;
+                        console.log(data);
                         $.each(data[each], function(kk, vv){
+                            console.log(vv);
                             if(!bFirst){
                                 var new_obj = $(html);
                                 obj.after(new_obj);

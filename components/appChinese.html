@@ -1,0 +1,39 @@
+<h2>Chinese Study</h2>
+<div jqcIf="page == 'list'">
+    <div jqcEach="data">
+        <button jqcOn="click: {fire: 'read(index)'}">Read</button>
+        <span jqcEach="chars" class="char" jqcText="{.}"></span>
+    </div>
+</div>
+<div jqcIf="page == 'learn'">
+    
+</div>
+<div jqcIf="page == 'test'">
+    
+</div>
+
+<script>
+    (function($){
+        $.ajax({
+        data: {},
+        type: "GET",
+        url: "assets/data/dataChinese.txt",
+        contentType: "text/plain;charset=utf-8",
+        success: function(d){
+            var data = d.split("\n");
+            var data1 = [];
+            $.each(data, function(i, v){
+                data1.push = {index: i, chars: v};
+            });
+            m.data = data1;
+            m.update();
+        }});
+        var m = {
+            page: 'list',
+            data: []
+
+
+        };
+        return m;
+    })(jQuery);
+</script>
