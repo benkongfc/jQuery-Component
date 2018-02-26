@@ -37,13 +37,9 @@
             data1 = jQuery.extend(true, {}, data); //for compare
 
             //local scope function
-            node.scope = function(func, remoteData, eachData){
+            node.scope = function(func, remoteData){
                 for (var i in remoteData) {
                     if(!(remoteData[i] instanceof Function)) eval("var " + i + " = (" + JSON.stringify(remoteData[i]) + ")");
-                }
-                for (var i in eachData) {
-                    if(!(eachData[i] instanceof Function))
-                        eval("var " + i + " = (" + JSON.stringify(eachData[i]) + ")");
                 }
                 return eval(func); //local scope
             };
@@ -129,18 +125,13 @@
                                         data.update(); 
                                     }else{ //fire functions
                                         if(vv.substr(0, 7) == 'parent.'){
-                                            eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data, eachData);");
+                                            eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
                                         }else{
                                             for (var i in data) {
                                                 if(!(data[i] instanceof Function))
                                                     eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                                             }
-                                            for (var i in eachData) {
-                                                if(!(eachData[i] instanceof Function))
-                                                    eval("var " + i + " = (" + JSON.stringify(eachData[i]) + ")");
-                                            }
                                             console.log(data);
-                                            console.log(eachData);
                                             eval("data." + vv + ";data.update()");                           
                                         }
                                     }
@@ -159,7 +150,7 @@
                         node.addLink(each);
                         var html = obj[0].outerHTML;
                         var bFirst = true;
-                        $.each(eachData?eachData[each]:data[each], function(kk, vv){
+                        $.each(data[each], function(kk, vv){
                             console.log(vv);
                             if(!bFirst){
                                 var new_obj = $(html);
