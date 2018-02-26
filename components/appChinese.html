@@ -46,7 +46,8 @@
                     data1.push({index: i, chars: row});
                 });
                 m.cdata = data1;
-                m.update();
+                if(m.update)
+                    m.update();
             }
         });
         function getRandomInt(min, max) {
