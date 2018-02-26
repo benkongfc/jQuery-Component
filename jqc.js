@@ -1,5 +1,5 @@
 (function($){
-    console.log = function() {};
+    //console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
@@ -99,7 +99,7 @@
             var templates_counter = {};
             node.loopObjs = function(objs, eachData1){
                 var eachData = eachData1 || 0;
-                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
+                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc]").each(function(k, obj){
                     obj = $(obj);   
 
                     if(obj.attr('jqcBind')){
@@ -187,8 +187,17 @@
                         if(name == '{.}'){
                             if(eachData)obj.html(eachData);
                         }else{
-                            obj.html(eval("data." + obj.attr("jqcText")));
-                            node.addLink(parseFieldName(obj.attr('jqcText')));
+                            obj.html(eval("data." + name));
+                            node.addLink(parseFieldName(name));
+                        }
+                    }
+                    if(obj.attr('jqcSrc')){
+                        var name = obj.attr("jqcSrc");
+                        if(name == '{.}'){
+                            if(eachData)obj.html(eachData);
+                        }else{
+                            obj.attr('src', eval("data." + name));
+                            node.addLink(parseFieldName(name));
                         }
                     }
                 });
