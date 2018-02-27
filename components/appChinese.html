@@ -71,9 +71,9 @@
                 var This = this;
                 this.page = 'learn';
                 this.learnIndex = index;
-                this.learnChars = this.cdata[index].chars;
+                this.learnChars = JSON.parse(JSON.stringify(this.cdata[index].chars));
                 do{
-                    this.lChar = this.cdata[index].chars[this.lCharIndex=getRandomInt(0, 15)].char;
+                    this.lChar = this.cdata[index].chars[this.lCharIndex=getRandomInt(0, 18)].char;
                 }while(!this.lChar.trim());
                 if(this.testing == 'true'){
                     this.learnChars.forEach(function(i){
