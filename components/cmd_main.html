@@ -13,13 +13,13 @@
     </form>
     <!-- Swiper -->
     <div jqcIf="deals.length == 0">Loading...</div>
-    <div class="swiper-container alldeals">
+    <!--<div class="swiper-container alldeals">
         <div class="swiper-wrapper">
             <div class="swiper-slide" jqc="cmd_dealslide" jqcEach="deals"></div>
         </div>
-        <!-- Add Pagination -->
         <div class="swiper-pagination"></div>
-    </div>
+    </div>-->
+    <div jqc="cmd_dealslide" jqcEach="deals"></div>
 
 </main><!-- /.container -->
 
@@ -42,7 +42,7 @@
             });
         },
         processData: function(data){
-            data.forEach(function(d){
+            data.forEach(function(d, i){
                 var images = d.acf.images;
                 images = images.match(/src=[\'\"](.*?)[\'\"]/);
                 d.thumburl = images[1].replace("http://www.firstclass.com.au", 
@@ -53,13 +53,20 @@
                 n = d.acf.duration;
                 f = d.acf.ports.split(",").shift();
                 c = d.acf.ports.split(",").pop();
-                p = `$${d.acf.selling_price}`;
+                if(d.acf.selling_price)
+                    p = `$${d.acf.selling_price}`;
+                else
+                    p = `$${d.acf.price}`;
                 d.thumbul.push(`Departs ${dep}, ${n} nights`);
                 d.thumbul.push(`Travel from ${f} to ${c}`);
-                d.thumbul.push(d.acf.saving_text);
+                d.thumbul.push(d.acf.saving_text.replace(/<br>/g, " "));
                 d.thumbul.push(`Book now from ${p}`);
+                d.index = i;
             });
             return data;
+        },
+        showPost: function(index){
+            console.log("ddd " + index);
         }
     }
 </script>

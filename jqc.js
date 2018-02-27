@@ -29,8 +29,6 @@
                 data.bFirstInit = true;
             }
             if(nodeId) datas[nodeId] = data;
-            if(name != 'post_row' && name != 'post_table')
-                console.log(data);
             var node = $(html);
             node.parent_obj = parent_obj;
             var tmpObj = $('<div></div>').html(node);
@@ -60,6 +58,7 @@
             };
             node.reload = function() { //slow func
                 //if(nodeId) $.datas[nodeId] = null;
+                console.log("reload " + name);
                 loop(node.parent_obj, data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
@@ -121,9 +120,6 @@
                         var val = eval('e={'+obj.attr('jqcOn')+'}');
                         $.each(val, function(onKey, onVal){
                             obj.on(onKey, function(){
-                                console.log(data);
-                                console.log(datas[nodeId]);
-                                console.log(datas.app_search_bar_1);
                                 $.each(onVal, function(vk, vv){
                                     vv = vv.replace("{.}", eachStr1);
                                     if(vk != 'fire'){
@@ -137,7 +133,7 @@
                                                 if(!(data[i] instanceof Function))
                                                     eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                                             }
-                                            console.log(data);
+                                            
                                             eval("data." + vv + ";data.update()");                           
                                         }
                                     }
@@ -159,15 +155,15 @@
                         var bFirst = true;
                         //cdata[0].chars
                         $.each(resolve(each, data), function(kk, vv){
-                            console.log(vv);
                             if(!bFirst){
                                 var new_obj = $(html);
                                 obj.after(new_obj);
                                 obj = new_obj;
                             }
-                            if(obj.attr('jqc'))
+                            if(obj.attr('jqc')){
+                                obj.parent_node = node;
                                 loop(obj, vv);
-                            else 
+                            }else 
                                 node.loopObjs(obj, `${each}.${kk}`, `${each}[${kk}]`);
                             bFirst = false;
                         });
@@ -230,9 +226,6 @@
             node.loopObjs(tmpObj);
             data.update = function(){
                 console.log("data checking " + name);
-                console.log(data);
-                console.log(data1);
-                console.log(datas.app_search_bar_1);
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(!(v instanceof Function) && k != 'bFirstInit'){
