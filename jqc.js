@@ -97,11 +97,17 @@
             if(data.init) data.init();
             //init tags
             var templates_counter = {};
-            node.loopObjs = function(objs, eachData1){
-                var eachData = eachData1 || 0;
+            function resolve(path, obj) {
+                return path.split('.').reduce(function(prev, curr) {
+                    return prev ? prev[curr] : null
+                }, obj || self)
+            }
+            node.loopObjs = function(objs, eachStr, eachStr1){
+                var eachStr = eachStr || '';
+                var eachStr1 = eachStr1 || '';
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc]").each(function(k, obj){
                     obj = $(obj);   
-
+                    if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
                     if(obj.attr('jqcBind')){
                         var bind = obj.attr('jqcBind');
                         obj.change(function(){
@@ -111,7 +117,7 @@
                         node.addLink(bind, bind, node, obj);
                     }
 
-                    if(obj.attr('jqcOn') && (eachData || !obj.parents().is('[jqcEach]'))){
+                    if(obj.attr('jqcOn')){
                         var val = eval('e={'+obj.attr('jqcOn')+'}');
                         $.each(val, function(onKey, onVal){
                             obj.on(onKey, function(){
@@ -119,7 +125,7 @@
                                 console.log(datas[nodeId]);
                                 console.log(datas.app_search_bar_1);
                                 $.each(onVal, function(vk, vv){
-                                    vv = vv.replace("{.}", `"${eachData}"`);
+                                    vv = vv.replace("{.}", eachStr1);
                                     if(vk != 'fire'){
                                         data[vk] = vv;
                                         data.update(); 
@@ -147,10 +153,12 @@
 
                     if(obj.attr('jqcEach')){
                         var each = obj.attr('jqcEach');
-                        node.addLink(each);
+                        each = each.replace("{.}", eachStr);
+                        node.addLink(parseFieldName(each));
                         var html = obj[0].outerHTML;
                         var bFirst = true;
-                        $.each(data[each], function(kk, vv){
+                        //cdata[0].chars
+                        $.each(resolve(each, data), function(kk, vv){
                             console.log(vv);
                             if(!bFirst){
                                 var new_obj = $(html);
@@ -160,7 +168,7 @@
                             if(obj.attr('jqc'))
                                 loop(obj, vv);
                             else 
-                                node.loopObjs(obj, vv);
+                                node.loopObjs(obj, `${each}.${kk}`, `${each}[${kk}]`);
                             bFirst = false;
                         });
                     }
@@ -186,21 +194,16 @@
 
                     if(obj.attr('jqcText')){
                         var name = obj.attr("jqcText");
-                        if(name == '{.}'){
-                            if(eachData)obj.html(eachData);
-                        }else{
-                            obj.html(eachData?eval("eachData." + name):eval("data." + name));
-                            node.addLink(parseFieldName(name));
-                        }
+                        //cdata[0].chars[0].char
+                        name = name.replace("{.}", eachStr);
+                        obj.html(resolve(name, data));
+                        node.addLink(parseFieldName(name));
                     }
                     if(obj.attr('jqcSrc')){
                         var name = obj.attr("jqcSrc");
-                        if(name == '{.}'){
-                            if(eachData)obj.html(eachData);
-                        }else{
-                            obj.attr('src', eval("data." + name));
-                            node.addLink(parseFieldName(name));
-                        }
+                        name = name.replace("{.}", eachStr);
+                        obj.attr('src', resolve(name, data));
+                        node.addLink(parseFieldName(name));
                     }
                 });
 
