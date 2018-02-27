@@ -1,0 +1,14 @@
+<h3 jqcText="detail.title.rendered"></h3>
+<img class="rounded img-fluid" jqcSrc="detail.thumburl">
+<div class="text-center">
+    <ul>
+        <li jqcEach="detail.thumbul" class="text-left"><span jqcText="{.}"></span></li>
+    </ul>
+</div>
+<div class="text-left" jqcText="detail.acf.ports"></div>
+
+<script>
+    m = {
+        detail: {}
+    }
+</script>

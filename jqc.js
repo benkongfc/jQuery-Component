@@ -92,7 +92,6 @@
                     });
                 }
             };
-            node.onReload();
             if(data.init) data.init();
             //init tags
             var templates_counter = {};
@@ -102,6 +101,8 @@
                 }, obj || self)
             }
             node.loopObjs = function(objs, eachStr, eachStr1){
+                node.onReload();
+                
                 var eachStr = eachStr || '';
                 var eachStr1 = eachStr1 || '';
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc]").each(function(k, obj){
@@ -243,6 +244,7 @@
                                     bChanged = true; //always update others node link
                             });
                         }
+                        console.log(node.link);
                         if(bChanged && node.link && node.link[k]){
                             console.log("data not eq link "+k);
                             $.each(node.link[k], function(i, event){
