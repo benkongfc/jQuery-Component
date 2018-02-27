@@ -1,18 +1,18 @@
 <h2>Chinese Study</h2>
 <div jqcIf="page == 'list'">
     <div jqcEach="cdata">
-        <button jqcOn="click: {fire: 'read({.}.index)'}">Read</button> &nbsp;
+        <button jqcOn="click: {fire: 'read({.}.index)'}" class="btn btn-primary">Read</button> &nbsp;
         <span jqcEach="{.}.chars" class="char"><font jqcText="{.}.char"></font></span> &nbsp;
-        <button jqcOn="click: {fire: 'learn({.}.index)'}">Learn</button> &nbsp;
-        <button jqcOn="click: {fire: 'test({.}.index)'}">Test</button> &nbsp;
+        <button jqcOn="click: {testing : 'false', fire: 'learn({.}.index)'}" class="btn btn-primary">Learn</button> &nbsp;
+        <button jqcOn="click: {testing : 'true', fire : 'learn({.}.index)'}" class="btn btn-primary">Test</button> &nbsp;
     </div>
 </div>
-<div jqcIf="page == 'learn'">
+<div jqcIf="page == 'learn' || page == 'test'">
+    <div><button jqcOn="click: {fire : 'start()'}" class="btn btn-primary">Play</button>
+        <button jqcOn="click: {fire : 'learn(learnIndex)'}" class="btn btn-primary">Change</button></div>
     <div class="lChar text-center" jqcText="lChar"></div>
-    <div class="lAllChars text-center"><span jqcEach="learnChars"><font jqcText="{.}.char"></font></span></div>
-</div>
-<div jqcIf="page == 'test'">
-    
+    <div class="lAllChars text-center"><span jqcEach="learnChars" class="text-left"><span jqcIfClass="highlighted == {.}.index ? 'highlighted' : ''"><a href="javascript:;" jqcOn="click: {fire: 'testClick({.}.index)'}"><font jqcText="{.}.char"></font></a></span></span></div>
+    <div><button jqcOn="click: {page : 'list'}" class="btn btn-primary">Back</button></div>
 </div>
 <style>
     .char {
@@ -23,6 +23,9 @@
     }
     .lAllChars {
         font-size: 3em;
+    }
+    .highlighted {
+        border: 1px solid rgb(221, 218, 218);
     }
 </style>
 
@@ -55,19 +58,44 @@
         }
         var m = {
             page: 'list',
+            learnIndex: 0,
             learnChars: [],
             lChar: '',
+            lCharIndex: 0,
             cdata: [],
+            highlighted: 0,
             read: function(index){
                 new Audio('assets/data/mp3/c'+(index+1)+'.m4a').play();
             },
             learn: function(index){
+                var This = this;
                 this.page = 'learn';
                 this.learnIndex = index;
                 this.learnChars = this.cdata[index].chars;
                 do{
-                    this.lChar = this.cdata[index].chars[getRandomInt(0, 15)].char;
+                    this.lChar = this.cdata[index].chars[this.lCharIndex=getRandomInt(0, 15)].char;
                 }while(!this.lChar.trim());
+                if(this.testing == 'true'){
+                    this.learnChars.forEach(function(i){
+                        if(i.char.trim())i.char = '口';
+                    });
+                }
+                This.start();
+            },
+            start: function() {
+                var This = this;
+                This.highlighted = 0;
+                new Audio('assets/data/mp3/c'+(This.learnIndex+1)+'.m4a').play();          
+                setTimeout(This.hightlightAdd = function() {
+                    if(This.highlighted > 18) return;
+                    This.highlighted++;
+                    This.update();
+                    setTimeout(This.hightlightAdd, 370);
+                },670)        
+            },
+            testClick: function(index){
+                if(index == this.lCharIndex) alert("Yes!");
+                else alert("No!");
             }
         };
         return m;

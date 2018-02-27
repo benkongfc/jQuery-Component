@@ -1,5 +1,5 @@
 (function($){
-    //console.log = function() {};
+    console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
@@ -105,7 +105,7 @@
                 
                 var eachStr = eachStr || '';
                 var eachStr1 = eachStr1 || '';
-                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc]").each(function(k, obj){
+                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfClass]").each(function(k, obj){
                     obj = $(obj);   
                     if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
                     if(obj.attr('jqcBind')){
@@ -186,6 +186,20 @@
                                 obj.remove();
                                 node.splice(i,1); //node is another array having this obj, so have to manually remove it
                             }else obj.remove();
+                        }
+                    }
+                    if(obj.attr('jqcIfClass')){
+                        var code = obj.attr('jqcIfClass');
+                        code = code.replace("{.}", eachStr1);
+                        node.addLink(parseFieldName(code));
+                        var b = false;
+                        for (var i in data) {
+                            if(!(data[i] instanceof Function))
+                                eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
+                        }
+                        b = eval(code);
+                        if(b){
+                            obj.attr('class', b);
                         }
                     }
 

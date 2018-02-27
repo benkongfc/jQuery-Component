@@ -14,17 +14,11 @@
     </form>
     <div jqcIf="page == 'list'">
         <div jqcIf="deals.length == 0">Loading...</div>
-        <!--<div class="swiper-container alldeals">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide" jqc="cmd_dealslide" jqcEach="deals"></div>
-            </div>
-            <div class="swiper-pagination"></div>
-        </div>-->
         <div jqc="cmd_dealslide" jqcEach="deals"></div>
     </div>
     <div jqc="cmd_details" jqcLink="detail->detail,page->page"></div>
 
-</main><!-- /.container -->
+</main>
 
 <script>
     m = {
