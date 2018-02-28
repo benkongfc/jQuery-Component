@@ -1,0 +1,21 @@
+<div><span jqcEach="learnChars" class="text-left"><span jqcIfClass="highlighted == {.}.index ? 'highlighted' : ''"><a href="javascript:;" jqcOn="click: {fire: 'testClick({.}.index)'}"><font jqcText="{.}.char"></font></a></span></span></div>
+
+<script>
+	m = {
+	    learnChars: [],
+	    lCharIndex: 0,
+	    highlighted: 0,
+	    init: function(){
+	    	var This = this;
+	    	setTimeout(This.hightlightAdd = function() {
+                if(This.highlighted > 18) return;
+                This.highlighted++;
+                This.update();
+            },370)
+	    },
+	    testClick: function(index){
+            if(index == this.lCharIndex) alert("Yes!");
+            else alert("No!");
+        }
+	}
+</script>

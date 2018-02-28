@@ -11,7 +11,7 @@
     <div><button jqcOn="click: {fire : 'start()'}" class="btn btn-primary">Play</button>
         <button jqcOn="click: {fire : 'learn(learnIndex)'}" class="btn btn-primary">Change</button></div>
     <div class="lChar text-center" jqcText="lChar"></div>
-    <div class="lAllChars text-center"><span jqcEach="learnChars" class="text-left"><span jqcIfClass="highlighted == {.}.index ? 'highlighted' : ''"><a href="javascript:;" jqcOn="click: {fire: 'testClick({.}.index)'}"><font jqcText="{.}.char"></font></a></span></span></div>
+    <div class="lAllChars text-center" jqc="chi_chars" jqcLink="lCharIndex->lCharIndex,learnChars->learnChars"></div>
     <div><button jqcOn="click: {page : 'list'}" class="btn btn-primary">Back</button></div>
 </div>
 <style>
@@ -83,19 +83,8 @@
                 This.start();
             },
             start: function() {
-                var This = this;
-                This.highlighted = 0;
-                new Audio('assets/data/mp3/c'+(This.learnIndex+1)+'.m4a').play();          
-                setTimeout(This.hightlightAdd = function() {
-                    if(This.highlighted > 18) return;
-                    This.highlighted++;
-                    This.update();
-                    setTimeout(This.hightlightAdd, 370);
-                },670)        
-            },
-            testClick: function(index){
-                if(index == this.lCharIndex) alert("Yes!");
-                else alert("No!");
+                this.highlighted = 0;
+                new Audio('assets/data/mp3/c'+(this.learnIndex+1)+'.m4a').play();                  
             }
         };
         return m;
