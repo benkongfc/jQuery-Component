@@ -29,6 +29,7 @@
             }
             if(nodeId) datas[nodeId] = data;
             var node = $(html);
+            data.__node = node;
             node.parent_obj = parent_obj;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
@@ -36,7 +37,7 @@
             //local scope function
             node.scope = function(func, remoteData){
                 for (var i in remoteData) {
-                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = (" + JSON.stringify(remoteData[i]) + ")");
+                    if(i.indexOf('__') != 0 && !(remoteData[i] instanceof Function)) eval("var " + i + " = (" + JSON.stringify(remoteData[i]) + ")");
                 }
                 return eval(func); //local scope
             };
@@ -131,7 +132,7 @@
                                             eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
                                         }else{
                                             for (var i in data) {
-                                                if(!(data[i] instanceof Function))
+                                                if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
                                                     eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                                             }
                                             
@@ -177,7 +178,7 @@
                         node.addLink(parseFieldName(code));
                         var b = false;
                         for (var i in data) {
-                            if(!(data[i] instanceof Function))
+                            if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
                                 eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                         }
                         b = eval(code);
@@ -196,7 +197,7 @@
                         node.addLink(parseFieldName(code));
                         var b = false;
                         for (var i in data) {
-                            if(!(data[i] instanceof Function))
+                            if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
                                 eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                         }
                         b = eval(code);
@@ -240,18 +241,18 @@
                 });
             }
             node.loopObjs(tmpObj);
-            data.update = function(){
+            data.update = function(){ //be careful of current scope!!! not match var node
                 console.log("data checking " + name);
                 var nodes = [];
                 $.each(data, function(k, v){
-                    if(!(v instanceof Function) && k != 'bFirstInit'){
+                    if(k.indexOf('__') != 0 && !(v instanceof Function) && k != 'bFirstInit'){
                         console.log("data checking field " + k);
                         var bChanged = false;
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
                             console.log("data not eq "+k);
                             bChanged = true;
                         }else{
-                            $.each(node.link[k], function(i, event){
+                            $.each(data.__node.link[k], function(i, event){
                                 var destField = event.destField;
                                 var targetNode = event.targetNode;
                                 var targetObj = event.targetObj || 0;
@@ -259,15 +260,15 @@
                                     bChanged = true; //always update others node link
                             });
                         }
-                        //console.log(node.link);
-                        if(bChanged && node.link && node.link[k]){
+                        //console.log(data.__node.link);
+                        if(bChanged && data.__node.link && data.__node.link[k]){
                             console.log("data not eq link "+k);
-                            $.each(node.link[k], function(i, event){
+                            $.each(data.__node.link[k], function(i, event){
                                 var destField = event.destField;
                                 var targetNode = event.targetNode;
                                 var targetObj = event.targetObj || 0;
                                 //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
-                                if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
+                                if((targetNode == data.__node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
                                     targetNode.set(destField, v);
                                     console.log("data changed " + targetNode.scope("name", []) + " " + destField);
                                     if(targetObj){
@@ -276,7 +277,7 @@
                                         else targetObj.text(v);
                                     }else nodes.push(targetNode); //re-render                               
                                     targetNode.copy(destField, v);   
-                                    node.copy(k, v); //make signal off
+                                    data.__node.copy(k, v); //make signal off
                                 }
                             });     
                         }
