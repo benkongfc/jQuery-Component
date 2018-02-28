@@ -1,5 +1,5 @@
 (function($){
-    console.log = function() {};
+    //console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
@@ -17,8 +17,8 @@
             var html = $.templates[name];
             var script = html.match(/<script>([\S\s]*?)<\/script>/i);
             html = html.replace(/<script>([\S\s]*?)<\/script>/i);
-            var data = {};
-            var data1 = {};
+            var data;
+            var data1;
             if(initData) data = initData;
             else if(script){
                 script = script[1];           
@@ -92,7 +92,7 @@
             };
             node.onReload();
             if(data.init) data.init();
-            //console.log(data);
+            console.log(data);
             //init tags
             var templates_counter = {};
             function resolve(path, obj) {
@@ -299,6 +299,7 @@
             };
 
             console.log("load " + name);
+            console.log(node);
             data.bFirstInit = false;
             node.parent_obj.html(node);
             if(data.after) data.after();
