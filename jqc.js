@@ -27,9 +27,9 @@
                 if(data.load) data.load();
                 data.bFirstInit = true;
             }
-            if(nodeId) datas[nodeId] = data;
             var node = $(html);
-            data.__node = node;
+            node.nodeId = nodeId;
+            if(nodeId) datas[nodeId] = node;
             node.parent_obj = parent_obj;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
@@ -62,11 +62,20 @@
             }
             node.addLink = function(field, destField, localNode, obj){
                 destField = destField || field;
-                localNode = localNode || node;
+                localNode = localNode || node.nodeId;
                 obj = obj || 0;
                 if(!node.link) node.link = {};
                 if(!node.link[field]) node.link[field] = [];
-                node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
+                var b = false;
+                node.link[field].forEach(function(i){
+                    if(i.targetNode == localNode && i.targetObj == obj && i.destField == destField)
+                        b = true;
+                });
+                if(!b)
+                    node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
+            }
+            node.init = function() {
+                if(data.init) data.init();
             }
 
             var parseFieldName = function(str){
@@ -82,8 +91,8 @@
                         var destField = link.split(/<?->/)[1].trim();
                         var targetNode = node.parent_obj.parent_node;
                         if(link.indexOf("<->") > -1)
-                            node.addLink(destField, field, targetNode); //up
-                        targetNode.addLink(field, destField, node); //down
+                            node.addLink(destField, field, targetNode.nodeId); //up
+                        targetNode.addLink(field, destField, node.nodeId); //down
                         if(data.bFirstInit){
                             console.log("loadData from up link");
                             data[destField] = targetNode.get(field);
@@ -115,7 +124,7 @@
                             data[bind] = obj.val(); //2 way binding
                         });
                         obj.val(data[bind]);
-                        node.addLink(bind, bind, node, obj);
+                        node.addLink(bind, bind, node.nodeId, obj);
                     }
 
                     if(obj.attr('jqcOn')){
@@ -164,8 +173,8 @@
                                 obj.after(new_obj);
                                 obj = new_obj;
                             }
+                            obj.parent_node = node;
                             if(obj.attr('jqc')){
-                                obj.parent_node = node;
                                 loop(obj, vv);
                             }else 
                                 node.loopObjs(obj, `${each}.${kk}`, `${each}[${kk}]`);
@@ -230,9 +239,12 @@
                     templates_counter[childName]++;
                     var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
                     if(datas[nodeFullId]){
-                        console.log("has data");
+                        console.log("has data " + nodeFullId);
                         obj.parent_node = node;
-                        loop(obj, datas[nodeFullId], nodeFullId); //load data
+                        datas[nodeFullId].parent_obj = obj;
+                        //datas[nodeFullId].onReload();
+                        //datas[nodeFullId].init();
+                        obj.html(datas[nodeFullId]);
                     }else{
                         console.log("no data");
                         obj.parent_node = node;
@@ -252,23 +264,24 @@
                             console.log("data not eq "+k);
                             bChanged = true;
                         }else{
-                            $.each(data.__node.link[k], function(i, event){
+                            $.each(node.link[k], function(i, event){
                                 var destField = event.destField;
-                                var targetNode = event.targetNode;
+                                var targetNode = datas[event.targetNode];
                                 var targetObj = event.targetObj || 0;
                                 if(targetNode != node)
                                     bChanged = true; //always update others node link
                             });
                         }
-                        //console.log(data.__node.link);
-                        if(bChanged && data.__node.link && data.__node.link[k]){
+                        if(bChanged && node.link && node.link[k]){
                             console.log("data not eq link "+k);
-                            $.each(data.__node.link[k], function(i, event){
+                            console.log(node.link[k]);
+                            $.each(node.link[k], function(i, event){
                                 var destField = event.destField;
-                                var targetNode = event.targetNode;
+                                var targetNode = datas[event.targetNode];
                                 var targetObj = event.targetObj || 0;
                                 //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
-                                if((targetNode == data.__node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
+                                //todo targetNode removed somethings
+                                if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
                                     targetNode.set(destField, v);
                                     console.log("data changed " + targetNode.scope("name", []) + " " + destField);
                                     if(targetObj){
@@ -277,7 +290,7 @@
                                         else targetObj.text(v);
                                     }else nodes.push(targetNode); //re-render                               
                                     targetNode.copy(destField, v);   
-                                    data.__node.copy(k, v); //make signal off
+                                    node.copy(k, v); //make signal off
                                 }
                             });     
                         }
