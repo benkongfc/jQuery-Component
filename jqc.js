@@ -3,6 +3,7 @@
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
+    var parent_objs = {};
     var loop = function(parent_obj, initData, nodeId){
         initData = initData || 0;
         var name = parent_obj.attr("jqc");
@@ -24,13 +25,13 @@
                 script = script[1];           
                 data = eval(script);
                 if(!data) data = {};
+                data.__bRun = true;
                 if(data.load) data.load();
                 data.bFirstInit = true;
             }
             var node = $(html);
-            node.nodeId = nodeId;
             if(nodeId) datas[nodeId] = node;
-            node.parent_obj = parent_obj;
+            if(nodeId) parent_objs[nodeId] = parent_obj;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
@@ -58,11 +59,11 @@
             };
             node.reload = function() { //slow func
                 console.log("reload " + name);
-                loop(node.parent_obj, data, nodeId);
+                loop(parent_objs[nodeId], data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
                 destField = destField || field;
-                localNode = localNode || node.nodeId;
+                localNode = localNode || nodeId;
                 obj = obj || 0;
                 if(!node.link) node.link = {};
                 if(!node.link[field]) node.link[field] = [];
@@ -71,8 +72,10 @@
                     if(i.targetNode == localNode && i.targetObj == obj && i.destField == destField)
                         b = true;
                 });
-                if(!b)
+                if(!b){
+                    console.log("add link " + nodeId + " > " + localNode + " : " + destField);
                     node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
+                }
             }
             node.init = function() {
                 if(data.init) data.init();
@@ -84,15 +87,15 @@
 
             //linking
             node.onReload = function() {
-                if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
-                    var links = node.parent_obj.attr('jqcLink').split(",");
+                if(parent_objs[nodeId].is('[jqcLink]')){ //REVERSE linking
+                    var links = parent_objs[nodeId].attr('jqcLink').split(",");
                     $.each(links, function(i, link){
                         var field = link.split(/<?->/)[0].trim();
                         var destField = link.split(/<?->/)[1].trim();
-                        var targetNode = node.parent_obj.parent_node;
+                        var targetNode = parent_objs[nodeId].parent_node;
                         if(link.indexOf("<->") > -1)
-                            node.addLink(destField, field, targetNode.nodeId); //up
-                        targetNode.addLink(field, destField, node.nodeId); //down
+                            node.addLink(destField, field, targetnodeId); //up
+                        targetNode.addLink(field, destField, nodeId); //down
                         if(data.bFirstInit){
                             console.log("loadData from up link");
                             data[destField] = targetNode.get(field);
@@ -116,15 +119,13 @@
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfClass]").each(function(k, obj){
                     obj = $(obj);   
                     if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
-                    if(eachStr.indexOf("learnChars") > -1)
-                        console.log("in " + eachStr);
                     if(obj.attr('jqcBind')){
                         var bind = obj.attr('jqcBind');
                         obj.change(function(){
                             data[bind] = obj.val(); //2 way binding
                         });
                         obj.val(data[bind]);
-                        node.addLink(bind, bind, node.nodeId, obj);
+                        node.addLink(bind, bind, nodeId, obj);
                     }
 
                     if(obj.attr('jqcOn')){
@@ -135,20 +136,20 @@
                                     vv = vv.replace("{.}", eachStr1);
                                     if(vk != 'fire'){
                                         data[vk] = vv;
-                                        data.update(); 
                                     }else{ //fire functions
                                         if(vv.substr(0, 7) == 'parent.'){
-                                            eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
+                                            eval("parent_objs[nodeId].parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
                                         }else{
                                             for (var i in data) {
                                                 if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
                                                     eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                                             }
                                             
-                                            eval("data." + vv + ";data.update()");                           
+                                            eval("data." + vv);                           
                                         }
                                     }
                                 });
+                                data.update(); 
                             });
                         });
                     }
@@ -194,10 +195,29 @@
                         if(!b){
                             var i = $.inArray(obj[0], node);
                             console.log("if remove " + code);
+                            var counter = {};
+                            obj.find("[jqc]").each(function(j, itm){
+                                itm = $(itm);
+                                var name = itm.attr("jqc");
+                                counter[name]= counter[name] || 0;
+                                counter[name]++;
+                                if(datas[nodeId + '_' + name + '_' + counter[name]])
+                                    datas[nodeId + '_' + name + '_' + counter[name]].set('__bRun', false);
+                            });
                             if(i > -1){
                                 obj.remove();
                                 node.splice(i,1); //node is another array having this obj, so have to manually remove it
                             }else obj.remove();
+                        }else{
+                            var counter = {};
+                            obj.find("[jqc]").each(function(j, itm){
+                                itm = $(itm);
+                                var name = itm.attr("jqc");
+                                counter[name]= counter[name] || 0;
+                                counter[name]++;
+                                datas[nodeId + '_' + name + '_' + counter[name]] = null; //reload
+                                console.log("reset " + nodeId + '_' + name + '_' + counter[name]);
+                            });
                         }
                     }
                     if(obj.attr('jqcIfClass')){
@@ -241,8 +261,8 @@
                     if(datas[nodeFullId]){
                         console.log("has data " + nodeFullId);
                         obj.parent_node = node;
-                        datas[nodeFullId].parent_obj = obj;
-                        //datas[nodeFullId].onReload();
+                        parent_objs[nodeFullId] = obj;
+                        datas[nodeFullId].onReload();
                         //datas[nodeFullId].init();
                         obj.html(datas[nodeFullId]);
                     }else{
@@ -255,6 +275,7 @@
             node.loopObjs(tmpObj);
             data.update = function(){ //be careful of current scope!!! not match var node
                 console.log("data checking " + name);
+                //var node = datas[nodeId];
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(k.indexOf('__') != 0 && !(v instanceof Function) && k != 'bFirstInit'){
@@ -272,9 +293,9 @@
                                     bChanged = true; //always update others node link
                             });
                         }
+                        if(bChanged)console.log(node.link);
                         if(bChanged && node.link && node.link[k]){
                             console.log("data not eq link "+k);
-                            console.log(node.link[k]);
                             $.each(node.link[k], function(i, event){
                                 var destField = event.destField;
                                 var targetNode = datas[event.targetNode];
@@ -315,7 +336,12 @@
             console.log("load " + name);
             console.log(node);
             data.bFirstInit = false;
-            node.parent_obj.html(node);
+            parent_objs[nodeId].html(node);
+            parent_objs[nodeId].css("border", "1px solid gray");
+            var cObj = parent_objs[nodeId];
+            setTimeout(function() {
+                cObj.css("border", "1px solid transparent");
+            }, 1000);
             if(data.after) data.after();
         });  
     };  
