@@ -1,5 +1,5 @@
 (function($){
-    console.log = function() {};
+    //console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
@@ -30,14 +30,7 @@
                 data.bFirstInit = true;
             }
             var node = $(html);
-            if(nodeId){
-                if(datas[nodeId]){
-                    datas[nodeId].set("__bRun", false);//stop running
-                    console.log('stop running');
-                }
-                datas[nodeId] = node;
-            }
-            data.__bRun = true;
+            if(nodeId) datas[nodeId] = node;
             if(nodeId) parent_objs[nodeId] = parent_obj;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
@@ -203,15 +196,6 @@
                         if(!b){
                             var i = $.inArray(obj[0], node);
                             //console.log("if remove " + code);
-                            var counter = {};
-                            obj.find("[jqc]").each(function(j, itm){
-                                itm = $(itm);
-                                var name = itm.attr("jqc");
-                                counter[name]= counter[name] || 0;
-                                counter[name]++;
-                                if(datas[nodeId + '_' + name + '_' + counter[name]])
-                                    datas[nodeId + '_' + name + '_' + counter[name]].set('__bRun', false);
-                            });
                             if(i > -1){
                                 obj.remove();
                                 node.splice(i,1); //node is another array having this obj, so have to manually remove it
@@ -280,6 +264,9 @@
                 });
             }
             node.loopObjs(tmpObj);
+            data.isValid = function(){
+                return parent_objs[nodeId].is(":visible");
+            }
             data.update = function(){ //be careful of current scope!!! not match var node
                 //console.log("data checking " + name);
                 //var node = datas[nodeId];
@@ -311,7 +298,7 @@
                                 //todo targetNode removed somethings
                                 if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
                                     targetNode.set(destField, v);
-                                    console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                    //console.log("data changed " + targetNode.scope("name", []) + " " + destField);
                                     if(targetObj){
                                         //console.log("quick load data");
                                         if(targetObj.is("input,select,textarea")) targetObj.val(v); 

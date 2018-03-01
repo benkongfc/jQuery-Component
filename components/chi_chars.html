@@ -11,7 +11,7 @@
 			else This.__wait = 370;
 
 	    	setTimeout(This.hightlightAdd = function() {
-                if(!This.__bRun || This.highlighted > 18) return;
+                if(!This.isValid() || This.highlighted > 18) return;
                 This.highlighted++;
                 This.update();
             },This.__wait)
