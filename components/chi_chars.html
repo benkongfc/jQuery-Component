@@ -7,9 +7,9 @@
 	    highlighted: 0,
 	    init: function(){
 			var This = this;
-			if(!This.__wait) This.__wait = 870;
-			else This.__wait = 370;
-
+			//if(!This.__wait) This.__wait = 870;
+			//else 
+			This.__wait = 370;
 	    	This.__timer = This.__timer || setTimeout(This.hightlightAdd = function() {
 				This.__timer = 0;
                 if(!This.isValid() || This.highlighted > 18) return;

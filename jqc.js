@@ -94,15 +94,14 @@
                             node.addLink(destField, field, targetnodeId); //up
                         targetNode.addLink(field, destField, nodeId); //down
                         if(data.bFirstInit){
-                            //console.log("loadData from up link");
+                            console.log("loadData from up link");
                             data[destField] = targetNode.get(field);
                         }
                     });
                 }
             };
             node.onReload();
-            if(data.init) 
-                data.init();
+            if(data.init) data.init();
             //console.log(data);
             //init tags
             var templates_counter = {};
@@ -320,6 +319,8 @@
                     }); have to reload */ 
                     return b;
                 });
+                if(nodes.length > 1)
+                    console.log("2");
                 $.each(nodes, function(){
                     this.reload();
                 })
