@@ -1,15 +1,15 @@
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <div jqcIf="!page || page == 'list'">
+    <div jqcIf="!page || page != 'detail'">
         <a class="navbar-brand" href="#">CMD</a>
         <div class="btn-group btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-secondary active">
-                    <input type="radio" name="options" id="option1" autocomplete="off">Today's Deals
+            <label class="btn btn-secondary" jqcIfClass="[page=='todaydeals','active']">
+                <input type="radio" name="options" id="option1" autocomplete="off" jqcOn="change : {fire: 'parent.todaydeals()'}">Today's Deals
             </label>
-            <label class="btn btn-secondary active">
-                <input type="radio" name="options" id="option1" autocomplete="off" checked> All
+            <label class="btn btn-secondary" jqcIfClass="[page=='list','active']">
+                <input type="radio" name="options" id="option1" autocomplete="off" jqcOn="change : {fire: 'parent.alldeals()'}"> All
             </label>
-            <label class="btn btn-secondary">
-                <input type="radio" name="options" id="option2" autocomplete="off"> Favourites
+            <label class="btn btn-secondary" jqcIfClass="[page=='favourites','active']">
+                <input type="radio" name="options" id="option2" autocomplete="off" jqcOn="change : {fire: 'parent.favourites()'}"> Favourites
             </label>
         </div>
     </div>

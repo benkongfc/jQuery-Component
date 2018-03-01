@@ -113,7 +113,7 @@
             node.loopObjs = function(objs, eachStr, eachStr1){
                 var eachStr = eachStr || '';
                 var eachStr1 = eachStr1 || '';
-                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfAttr]").each(function(k, obj){
+                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfAttr],[jqcIfClass]").each(function(k, obj){
                     obj = $(obj);   
                     if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
                     if(obj.attr('jqcBind')){
@@ -225,6 +225,22 @@
                             Object.keys(b).forEach(function(k){
                                 obj.attr(k, b[k]);
                             });
+                        }
+                    }
+                    if(obj.attr('jqcIfClass')){
+                        var code = obj.attr('jqcIfClass');
+                        code = code.replace("{.}", eachStr1);
+                        node.addLink(parseFieldName(code));
+                        var b = false;
+                        for (var i in data) {
+                            if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
+                                eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
+                        }
+                        b = eval(code);
+                        if(b[0]){
+                            obj.addClass(b[1]);
+                        }else{
+                            obj.removeClass(b[1]);
                         }
                     }
 
