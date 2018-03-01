@@ -1,5 +1,5 @@
 (function($){
-    //console.log = function() {};
+    console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};

@@ -7,11 +7,14 @@
 	    highlighted: 0,
 	    init: function(){
 			var This = this;
+			if(!This.__wait) This.__wait = 870;
+			else This.__wait = 370;
+
 	    	setTimeout(This.hightlightAdd = function() {
                 if(!This.__bRun || This.highlighted > 18) return;
                 This.highlighted++;
                 This.update();
-            },370)
+            },This.__wait)
 	    },
 	    testClick: function(index){
             if(index == this.lCharIndex) alert("Yes!");
