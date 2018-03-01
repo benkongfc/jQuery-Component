@@ -15,6 +15,7 @@
             });
         }
         $.when($.templates_deferred[name]).done(function(){
+            console.log("loop " + nodeId);
             var html = $.templates[name];
             var script = html.match(/<script>([\S\s]*?)<\/script>/i);
             html = html.replace(/<script>([\S\s]*?)<\/script>/i);
@@ -260,7 +261,7 @@
                     templates_counter[childName]++;
                     var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
                     if(datas[nodeFullId]){
-                        //console.log("has data " + nodeFullId);
+                        console.log("has data " + nodeFullId);
                         obj.parent_node = node;
                         parent_objs[nodeFullId] = obj;
                         datas[nodeFullId].onReload();
@@ -304,7 +305,7 @@
                                 //todo targetNode removed somethings
                                 if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
                                     targetNode.set(destField, v);
-                                    //console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                    console.log("data changed " + targetNode.scope("name", []) + " " + destField);
                                     if(targetObj){
                                         //console.log("quick load data");
                                         if(targetObj.is("input,select,textarea")) targetObj.val(v); 
@@ -320,10 +321,10 @@
                 nodes = $.unique(nodes);
                 nodes = nodes.filter(function(i){
                     var b = true;
-                    $.each(nodes, function(z, j){
+                    /*$.each(nodes, function(z, j){
                         if(j.find(i).length > 0)
                             b = false;
-                    });
+                    }); have to reload */ 
                     return b;
                 });
                 $.each(nodes, function(){
