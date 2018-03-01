@@ -7,6 +7,7 @@
 	    highlighted: 0,
 	    init: function(){
 			var This = this;
+			console.log("init");
 	    	setTimeout(This.hightlightAdd = function() {
                 if(!This.__bRun || This.highlighted > 18) return;
                 This.highlighted++;

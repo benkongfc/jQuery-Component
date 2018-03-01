@@ -58,7 +58,7 @@
                 return data[k];
             };
             node.reload = function() { //slow func
-                console.log("reload " + name);
+                //console.log("reload " + name);
                 loop(parent_objs[nodeId], data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
@@ -73,12 +73,9 @@
                         b = true;
                 });
                 if(!b){
-                    console.log("add link " + nodeId + " > " + localNode + " : " + destField);
+                    //console.log("add link " + nodeId + " > " + localNode + " : " + destField);
                     node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
                 }
-            }
-            node.init = function() {
-                if(data.init) data.init();
             }
 
             var parseFieldName = function(str){
@@ -97,7 +94,7 @@
                             node.addLink(destField, field, targetnodeId); //up
                         targetNode.addLink(field, destField, nodeId); //down
                         if(data.bFirstInit){
-                            console.log("loadData from up link");
+                            //console.log("loadData from up link");
                             data[destField] = targetNode.get(field);
                         }
                     });
@@ -105,7 +102,7 @@
             };
             node.onReload();
             if(data.init) data.init();
-            console.log(data);
+            //console.log(data);
             //init tags
             var templates_counter = {};
             function resolve(path, obj) {
@@ -166,8 +163,7 @@
                         var html = obj[0].outerHTML;
                         var bFirst = true;
                         //cdata[0].chars
-                        if(each == 'learnChars')
-                            console.log(resolve(each, data));
+                        //if(each == 'learnChars')console.log(resolve(each, data));
                         $.each(resolve(each, data), function(kk, vv){
                             if(!bFirst){
                                 var new_obj = $(html);
@@ -194,7 +190,7 @@
                         b = eval(code);
                         if(!b){
                             var i = $.inArray(obj[0], node);
-                            console.log("if remove " + code);
+                            //console.log("if remove " + code);
                             var counter = {};
                             obj.find("[jqc]").each(function(j, itm){
                                 itm = $(itm);
@@ -216,7 +212,7 @@
                                 counter[name]= counter[name] || 0;
                                 counter[name]++;
                                 datas[nodeId + '_' + name + '_' + counter[name]] = null; //reload
-                                console.log("reset " + nodeId + '_' + name + '_' + counter[name]);
+                                //console.log("reset " + nodeId + '_' + name + '_' + counter[name]);
                             });
                         }
                     }
@@ -259,14 +255,13 @@
                     templates_counter[childName]++;
                     var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
                     if(datas[nodeFullId]){
-                        console.log("has data " + nodeFullId);
+                        //console.log("has data " + nodeFullId);
                         obj.parent_node = node;
                         parent_objs[nodeFullId] = obj;
                         datas[nodeFullId].onReload();
-                        //datas[nodeFullId].init();
                         obj.html(datas[nodeFullId]);
                     }else{
-                        console.log("no data");
+                        //console.log("no data");
                         obj.parent_node = node;
                         loop(obj, null, nodeFullId);
                     }
@@ -274,15 +269,15 @@
             }
             node.loopObjs(tmpObj);
             data.update = function(){ //be careful of current scope!!! not match var node
-                console.log("data checking " + name);
+                //console.log("data checking " + name);
                 //var node = datas[nodeId];
                 var nodes = [];
                 $.each(data, function(k, v){
                     if(k.indexOf('__') != 0 && !(v instanceof Function) && k != 'bFirstInit'){
-                        console.log("data checking field " + k);
+                        //console.log("data checking field " + k);
                         var bChanged = false;
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
-                            console.log("data not eq "+k);
+                            //console.log("data not eq "+k);
                             bChanged = true;
                         }else{
                             $.each(node.link[k], function(i, event){
@@ -293,9 +288,9 @@
                                     bChanged = true; //always update others node link
                             });
                         }
-                        if(bChanged)console.log(node.link);
+                        //if(bChanged)console.log(node.link);
                         if(bChanged && node.link && node.link[k]){
-                            console.log("data not eq link "+k);
+                            //console.log("data not eq link "+k);
                             $.each(node.link[k], function(i, event){
                                 var destField = event.destField;
                                 var targetNode = datas[event.targetNode];
@@ -304,9 +299,9 @@
                                 //todo targetNode removed somethings
                                 if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
                                     targetNode.set(destField, v);
-                                    console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                    //console.log("data changed " + targetNode.scope("name", []) + " " + destField);
                                     if(targetObj){
-                                        console.log("quick load data");
+                                        //console.log("quick load data");
                                         if(targetObj.is("input,select,textarea")) targetObj.val(v); 
                                         else targetObj.text(v);
                                     }else nodes.push(targetNode); //re-render                               
@@ -333,8 +328,8 @@
                 })
             };
 
-            console.log("load " + name);
-            console.log(node);
+            //console.log("load " + name);
+            //console.log(node);
             data.bFirstInit = false;
             parent_objs[nodeId].html(node);
             parent_objs[nodeId].css("border", "1px solid gray");
