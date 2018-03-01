@@ -16,7 +16,9 @@
         <div jqcIf="deals.length == 0">Loading...</div>
         <div jqc="cmd_dealslide" jqcEach="deals"></div>
     </div>
-    <div jqc="cmd_details" jqcLink="detail->detail,page->page"></div>
+    <div jqcIf="page == 'detail'">
+        <div jqc="cmd_details" jqcLink="detail->detail"></div>
+    </div>
 
 </main>
 

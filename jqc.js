@@ -113,7 +113,7 @@
             node.loopObjs = function(objs, eachStr, eachStr1){
                 var eachStr = eachStr || '';
                 var eachStr1 = eachStr1 || '';
-                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfClass]").each(function(k, obj){
+                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfAttr]").each(function(k, obj){
                     obj = $(obj);   
                     if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
                     if(obj.attr('jqcBind')){
@@ -211,8 +211,8 @@
                             });
                         }
                     }
-                    if(obj.attr('jqcIfClass')){
-                        var code = obj.attr('jqcIfClass');
+                    if(obj.attr('jqcIfAttr')){
+                        var code = obj.attr('jqcIfAttr');
                         code = code.replace("{.}", eachStr1);
                         node.addLink(parseFieldName(code));
                         var b = false;
@@ -222,7 +222,9 @@
                         }
                         b = eval(code);
                         if(b){
-                            obj.attr('class', b);
+                            Object.keys(b).forEach(function(k){
+                                obj.attr(k, b[k]);
+                            });
                         }
                     }
 

@@ -1,4 +1,4 @@
-<div><span jqcEach="learnChars" class="text-left"><span jqcIfClass="highlighted == {.}.index ? 'highlighted' : ''"><a href="javascript:;" jqcOn="click: {fire: 'testClick({.}.index)'}"><font jqcText="{.}.char"></font></a></span></span></div>
+<div><span jqcEach="learnChars" class="text-left"><span jqcIfAttr="highlighted == {.}.index ? {class: 'highlighted'} : ''"><a href="javascript:;" jqcOn="click: {fire: 'testClick({.}.index)'}"><font jqcText="{.}.char"></font></a></span></span></div>
 
 <script>
 	m = {
@@ -12,6 +12,7 @@
 			This.__wait = 370;
 	    	This.__timer = This.__timer || setTimeout(This.hightlightAdd = function() {
 				This.__timer = 0;
+				console.log(This);
                 if(!This.isValid() || This.highlighted > 18) return;
                 This.highlighted++;
                 This.update();
