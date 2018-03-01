@@ -101,7 +101,8 @@
                 }
             };
             node.onReload();
-            if(data.init) data.init();
+            if(data.init) 
+                data.init();
             //console.log(data);
             //init tags
             var templates_counter = {};
@@ -316,10 +317,8 @@
                 nodes = nodes.filter(function(i){
                     var b = true;
                     $.each(nodes, function(z, j){
-                        j.each(function(z, k){
-                            if(k == i.parent()[0])
-                                b = false;
-                        });
+                        if(j.find(i).length > 0)
+                            b = false;
                     });
                     return b;
                 });
