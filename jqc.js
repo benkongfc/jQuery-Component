@@ -9,7 +9,7 @@
         var name = parent_obj.attr("jqc");
         if(!$.templates[name] && !$.templates_deferred[name]){
             $.templates_deferred[name] = $.Deferred();
-            $.get(`components/${name}.html?` + Math.random().toString(), '', function (html){ //load from cache can be qiucker
+            $.get(`components/${name}.html?` + Math.random().toString(), '').done(function (html){ //load from cache can be qiucker
                 $.templates[name] = html;
                 $.templates_deferred[name].resolve();
             });
@@ -173,7 +173,11 @@
                             }
                             obj.parent_node = node;
                             if(obj.attr('jqc')){
-                                loop(obj, vv);
+                                var childName = obj.attr('jqc');
+                                templates_counter[childName] = templates_counter[childName] || 0;
+                                templates_counter[childName]++;
+                                var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
+                                loop(obj, vv, nodeFullId);
                             }else 
                                 node.loopObjs(obj, `${each}.${kk}`, `${each}[${kk}]`);
                             bFirst = false;
@@ -331,11 +335,11 @@
             //console.log(node);
             data.bFirstInit = false;
             parent_objs[nodeId].html(node);
-            parent_objs[nodeId].css("border", "1px solid gray");
+            /*parent_objs[nodeId].css("border", "1px solid gray");
             var cObj = parent_objs[nodeId];
             setTimeout(function() {
                 cObj.css("border", "1px solid transparent");
-            }, 1000);
+            }, 1000);*/
             if(data.after) data.after();
         });  
     };  
