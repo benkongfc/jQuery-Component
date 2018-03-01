@@ -10,11 +10,12 @@
 			if(!This.__wait) This.__wait = 870;
 			else This.__wait = 370;
 
-	    	setTimeout(This.hightlightAdd = function() {
+	    	This.__timer = This.__timer || setTimeout(This.hightlightAdd = function() {
+				This.__timer = 0;
                 if(!This.isValid() || This.highlighted > 18) return;
                 This.highlighted++;
                 This.update();
-            },This.__wait)
+            },This.__wait);
 	    },
 	    testClick: function(index){
             if(index == this.lCharIndex) alert("Yes!");
