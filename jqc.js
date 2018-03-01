@@ -26,12 +26,18 @@
                 script = script[1];           
                 data = eval(script);
                 if(!data) data = {};
-                data.__bRun = true;
                 if(data.load) data.load();
                 data.bFirstInit = true;
             }
             var node = $(html);
-            if(nodeId) datas[nodeId] = node;
+            if(nodeId){
+                if(datas[nodeId]){
+                    datas[nodeId].set("__bRun", false);//stop running
+                    console.log('stop running');
+                }
+                datas[nodeId] = node;
+            }
+            data.__bRun = true;
             if(nodeId) parent_objs[nodeId] = parent_obj;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
