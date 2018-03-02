@@ -116,6 +116,7 @@
                 objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfAttr],[jqcIfClass]").each(function(k, obj){
                     obj = $(obj);   
                     if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
+                    if(objs.find(obj).length == 0) return true;
                     if(obj.attr('jqcBind')){
                         var bind = obj.attr('jqcBind');
                         obj.change(function(){
@@ -285,7 +286,7 @@
                 return parent_objs[nodeId].is(":visible");
             }
             data.update = function(){ //be careful of current scope!!! not match var node
-                //console.log("data checking " + name);
+                console.log("data checking " + name);
                 //var node = datas[nodeId];
                 var nodes = [];
                 $.each(data, function(k, v){
