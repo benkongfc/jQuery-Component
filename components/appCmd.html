@@ -1,18 +1,125 @@
 <style>
-    .cmd_starter { 
-        height: 100%; 
+    body {
+        padding-top: 5rem;
+    }
+    .starter-template {
+        padding: 3rem 1.5rem;
+        text-align: center;
     }
 </style>
-<div class="cmd_starter" jqc="cmd_starter" jqcIf="bStarter"></div>
-<div jqc="cmd_main" jqcIf="!bStarter"></div>
+<div jqc="cmd_navbar" jqcLink="page->page"></div>
+<main role="main" class="container">
+    <form class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+    </form>
+    <div jqcIf="page == 'list'">
+        <div jqcIf="deals.length == 0">Loading...</div>
+        <div jqc="cmd_dealslide" jqcEach="ldeals"></div>
+    </div>
+    <div jqcIf="page == 'detail'">
+        <div jqc="cmd_details" jqcLink="detail->detail"></div>
+    </div>
+    <div jqcIf="page == 'todaydeals' && detail">
+        <div jqc="cmd_details" jqcLink="detail->detail"></div>
+    </div>
+
+</main>
 
 <script>
-    (function($) {
-        return {
-            bStarter : !localStorage.getItem("bStarter"),
-            close: function() {
-                localStorage.setItem("bStarter", this.bStarter = false);
-            }
+    var m;
+    $(window).on("scroll", function() {
+        var scrollHeight = $(document).height();
+        var scrollPosition = $(window).height() + $(window).scrollTop();
+        if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
+            m.load10deals();
+            m.update();
         }
-    })(jQuery);
+    });
+
+    m = {
+        deals : [],
+        ldeals: [],
+        detail: null,
+        page: 'list',
+        ldealsIndex: 10,
+        after: function() {
+            var swiper = new Swiper('.swiper-container', {
+                    pagination: {
+                    el: '.swiper-pagination',
+                    dynamicBullets: true,
+                },
+            });
+        },
+        processData: function(data){
+            data.forEach(function(d, i){
+                var images = d.acf.images;
+                images = images.match(/src=[\'\"](.*?)[\'\"]/);
+                if(images){
+                    d.thumburl = images[1].replace("http://www.firstclass.com.au", 
+                        "https://d2tu0namn5fw5o.cloudfront.net");
+                }
+                d.thumbul = [];
+                var dep = n = f = c = p = 0;
+                dep = moment(d.acf.departure_dates[0].departure_date, "YYYYMMDD").format('D MMM YYYY');
+                n = d.acf.duration;
+                f = d.acf.ports.split(",").shift();
+                c = d.acf.ports.split(",").pop();
+                if(d.acf.selling_price)
+                    p = `$${d.acf.selling_price}`;
+                else
+                    p = `$${d.acf.price}`;
+                d.thumbul.push(`Departs ${dep}, ${n} nights`);
+                d.thumbul.push(`Travel from ${f} to ${c}`);
+                d.thumbul.push(d.acf.saving_text.replace(/<br>/g, " "));
+                d.thumbul.push(`Book now from ${p}`);
+                d.index = i;
+            });
+            return data;
+        },
+        load: function() {
+            var This = this;
+            var deals = localStorage.getItem("deals");
+            if(!deals){
+                $.get("http://cmd.local/wp-json/wp/v2/cruise/?_embed&per_page=100", {}, function(data){
+                    localStorage.setItem("deals", JSON.stringify(data));
+                    This.deals = This.processData(data);
+                    This.ldeals = This.deals.slice(0, 10);
+                    This.update();
+                });
+            }else{
+                This.deals = This.processData(JSON.parse(deals));
+                This.ldeals = This.deals.slice(0, 10);
+                if(This.update)
+                    This.update();
+            }
+        },
+        showPost: function(index){
+            console.log(this.deals[index]);
+            this.detail = this.deals[index];
+            this.page = 'detail';
+        },
+        back: function() {
+            this.page = 'list';
+        },
+        todaydeals: function() {
+            this.page = 'todaydeals';
+            this.detail = null;
+            var This = this;
+            this.deals.some(function(c){
+                if(c.tags.indexOf(614) > -1){
+                    This.detail = c;  
+                    return true; 
+                }
+            });
+        },
+        alldeals: function() {
+            this.page = 'list';
+        },
+        favourites: function() {
+            this.page = 'favourites';
+        },
+        load10deals: function(){
+            this.ldeals = this.ldeals.concat(this.deals.slice(this.ldealsIndex, this.ldealsIndex+=10));
+        }
+    }
 </script>
