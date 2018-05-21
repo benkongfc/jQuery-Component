@@ -38,7 +38,7 @@
         },
         load: function() {
             var This = this;
-            $.get("http://cmd.local/wp-json/wp/v2/cruise/?_embed&per_page=10", {}, function(data){
+            $.get("http://dev.firstclass.com.au:31381/wp-json/wp/v2/cruise/?_embed&per_page=10", {}, function(data){
                 This.deals = data;
                 This.update();
             });
