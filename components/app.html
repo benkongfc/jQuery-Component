@@ -54,8 +54,6 @@
             });
             if(recent)
                 this.searchs.push(searchBy + " -> " + txt);
-            this.searchTxt = txt;
-            this.searchBy = searchBy;
         },
         searchRecent: function(txt){
             this.searchPost(this.searchBy=txt.split(" -> ")[0], this.searchTxt=txt.split(" -> ")[1], false);

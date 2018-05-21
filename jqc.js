@@ -1,44 +1,42 @@
 (function($){
-    //console.log = function() {};
     $.templates = {};
     $.templates_deferred = {};
     var datas = {};
-    var parent_objs = {};
     var loop = function(parent_obj, initData, nodeId){
         initData = initData || 0;
         var name = parent_obj.attr("jqc");
         if(!$.templates[name] && !$.templates_deferred[name]){
             $.templates_deferred[name] = $.Deferred();
-            $.get(`components/${name}.html?` + Math.random().toString(), '').done(function (html){ //load from cache can be qiucker
+            $.get(`components/${name}.html?` + Math.random().toString(), '', function (html){ //load from cache can be qiucker
                 $.templates[name] = html;
                 $.templates_deferred[name].resolve();
             });
         }
         $.when($.templates_deferred[name]).done(function(){
-            console.log("loop " + nodeId);
+            //console.log("start " + name);
             var html = $.templates[name];
             var script = html.match(/<script>([\S\s]*?)<\/script>/i);
             html = html.replace(/<script>([\S\s]*?)<\/script>/i);
-            var data;
-            var data1;
+            var data = {};
+            var data1 = {};
             if(initData) data = initData;
             else if(script){
                 script = script[1];           
                 data = eval(script);
                 if(!data) data = {};
                 if(data.load) data.load();
+                if(nodeId) datas[nodeId] = data;
                 data.bFirstInit = true;
             }
             var node = $(html);
-            if(nodeId) datas[nodeId] = node;
-            if(nodeId) parent_objs[nodeId] = parent_obj;
+            node.parent_obj = parent_obj;
             var tmpObj = $('<div></div>').html(node);
             data1 = jQuery.extend(true, {}, data); //for compare
 
             //local scope function
             node.scope = function(func, remoteData){
                 for (var i in remoteData) {
-                    if(i.indexOf('__') != 0 && !(remoteData[i] instanceof Function)) eval("var " + i + " = (" + JSON.stringify(remoteData[i]) + ")");
+                    if(!(remoteData[i] instanceof Function)) eval("var " + i + " = (" + JSON.stringify(remoteData[i]) + ")");
                 }
                 return eval(func); //local scope
             };
@@ -58,24 +56,16 @@
                 return data[k];
             };
             node.reload = function() { //slow func
-                //console.log("reload " + name);
-                loop(parent_objs[nodeId], data, nodeId);
+                //if(nodeId) $.datas[nodeId] = null;
+                loop(node.parent_obj, data, nodeId);
             }
             node.addLink = function(field, destField, localNode, obj){
                 destField = destField || field;
-                localNode = localNode || nodeId;
+                localNode = localNode || node;
                 obj = obj || 0;
                 if(!node.link) node.link = {};
                 if(!node.link[field]) node.link[field] = [];
-                var b = false;
-                node.link[field].forEach(function(i){
-                    if(i.targetNode == localNode && i.targetObj == obj && i.destField == destField)
-                        b = true;
-                });
-                if(!b){
-                    //console.log("add link " + nodeId + " > " + localNode + " : " + destField);
-                    node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
-                }
+                node.link[field].push({targetNode: localNode, targetObj: obj, destField: destField}); //link autorender
             }
 
             var parseFieldName = function(str){
@@ -84,15 +74,15 @@
 
             //linking
             node.onReload = function() {
-                if(parent_objs[nodeId].is('[jqcLink]')){ //REVERSE linking
-                    var links = parent_objs[nodeId].attr('jqcLink').split(",");
+                if(node.parent_obj.is('[jqcLink]')){ //REVERSE linking
+                    var links = node.parent_obj.attr('jqcLink').split(",");
                     $.each(links, function(i, link){
                         var field = link.split(/<?->/)[0].trim();
                         var destField = link.split(/<?->/)[1].trim();
-                        var targetNode = parent_objs[nodeId].parent_node;
+                        var targetNode = node.parent_obj.parent_node;
                         if(link.indexOf("<->") > -1)
-                            node.addLink(destField, field, targetnodeId); //up
-                        targetNode.addLink(field, destField, nodeId); //down
+                            node.addLink(destField, field, targetNode); //up
+                        targetNode.addLink(field, destField, node); //down
                         if(data.bFirstInit){
                             console.log("loadData from up link");
                             data[destField] = targetNode.get(field);
@@ -102,52 +92,45 @@
             };
             node.onReload();
             if(data.init) data.init();
-            //console.log(data);
             //init tags
             var templates_counter = {};
-            function resolve(path, obj) {
-                return path.split('.').reduce(function(prev, curr) {
-                    return prev ? prev[curr] : null
-                }, obj || self)
-            }
-            node.loopObjs = function(objs, eachStr, eachStr1){
-                var eachStr = eachStr || '';
-                var eachStr1 = eachStr1 || '';
-                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText],[jqcSrc],[jqcIfAttr],[jqcIfClass]").each(function(k, obj){
+            node.loopObjs = function(objs, eachData1){
+                var eachData = eachData1 || 0;
+                objs.find("[jqcBind],[jqcOn],[jqcCallback],[jqcEach],[jqcIf],[jqcText]").each(function(k, obj){
                     obj = $(obj);   
-                    if(obj.parents().is('[jqcEach]') && obj.parents('[jqcEach]')[0] != objs[0]) return true; //skip child each
-                    if(objs.find(obj).length == 0) return true;
+
                     if(obj.attr('jqcBind')){
                         var bind = obj.attr('jqcBind');
                         obj.change(function(){
                             data[bind] = obj.val(); //2 way binding
                         });
                         obj.val(data[bind]);
-                        node.addLink(bind, bind, nodeId, obj);
+                        node.addLink(bind, bind, node, obj);
                     }
 
-                    if(obj.attr('jqcOn')){
+                    if(obj.attr('jqcOn') && (eachData || !obj.parents().is('[jqcEach]'))){
                         var val = eval('e={'+obj.attr('jqcOn')+'}');
                         $.each(val, function(onKey, onVal){
                             obj.on(onKey, function(){
+                                console.log(data);
+                                console.log(datas[nodeId]);
                                 $.each(onVal, function(vk, vv){
-                                    vv = vv.replace("{.}", eachStr1);
+                                    vv = vv.replace("{.}", `"${eachData}"`);
                                     if(vk != 'fire'){
                                         data[vk] = vv;
+                                        data.update(); 
                                     }else{ //fire functions
                                         if(vv.substr(0, 7) == 'parent.'){
-                                            eval("parent_objs[nodeId].parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
+                                            eval("node.parent_obj.parent_node.scope('data." + vv.substr(7) + ";data.update()', data);");
                                         }else{
                                             for (var i in data) {
-                                                if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
+                                                if(!(data[i] instanceof Function))
                                                     eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                                             }
-                                            
-                                            eval("data." + vv);                           
+                                            eval("data." + vv + ";data.update()");                           
                                         }
                                     }
                                 });
-                                data.update(); 
                             });
                         });
                     }
@@ -159,27 +142,19 @@
 
                     if(obj.attr('jqcEach')){
                         var each = obj.attr('jqcEach');
-                        each = each.replace("{.}", eachStr);
-                        node.addLink(parseFieldName(each));
+                        node.addLink(each);
                         var html = obj[0].outerHTML;
                         var bFirst = true;
-                        //cdata[0].chars
-                        //if(each == 'learnChars')console.log(resolve(each, data));
-                        $.each(resolve(each, data), function(kk, vv){
+                        $.each(data[each], function(kk, vv){
                             if(!bFirst){
                                 var new_obj = $(html);
                                 obj.after(new_obj);
                                 obj = new_obj;
                             }
-                            obj.parent_node = node;
-                            if(obj.attr('jqc')){
-                                var childName = obj.attr('jqc');
-                                templates_counter[childName] = templates_counter[childName] || 0;
-                                templates_counter[childName]++;
-                                var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
-                                loop(obj, vv, nodeFullId);
-                            }else 
-                                node.loopObjs(obj, `${each}.${kk}`, `${each}[${kk}]`);
+                            if(obj.attr('jqc'))
+                                loop(obj, vv);
+                            else 
+                                node.loopObjs(obj, vv);
                             bFirst = false;
                         });
                     }
@@ -189,74 +164,28 @@
                         node.addLink(parseFieldName(code));
                         var b = false;
                         for (var i in data) {
-                            if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
+                            if(!(data[i] instanceof Function))
                                 eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
                         }
                         b = eval(code);
                         if(!b){
                             var i = $.inArray(obj[0], node);
-                            //console.log("if remove " + code);
+                            console.log("if remove");
                             if(i > -1){
                                 obj.remove();
                                 node.splice(i,1); //node is another array having this obj, so have to manually remove it
                             }else obj.remove();
-                        }else{
-                            var counter = {};
-                            obj.find("[jqc]").each(function(j, itm){
-                                itm = $(itm);
-                                var name = itm.attr("jqc");
-                                counter[name]= counter[name] || 0;
-                                counter[name]++;
-                                datas[nodeId + '_' + name + '_' + counter[name]] = null; //reload
-                                //console.log("reset " + nodeId + '_' + name + '_' + counter[name]);
-                            });
-                        }
-                    }
-                    if(obj.attr('jqcIfAttr')){
-                        var code = obj.attr('jqcIfAttr');
-                        code = code.replace("{.}", eachStr1);
-                        node.addLink(parseFieldName(code));
-                        var b = false;
-                        for (var i in data) {
-                            if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
-                                eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
-                        }
-                        b = eval(code);
-                        if(b){
-                            Object.keys(b).forEach(function(k){
-                                obj.attr(k, b[k]);
-                            });
-                        }
-                    }
-                    if(obj.attr('jqcIfClass')){
-                        var code = obj.attr('jqcIfClass');
-                        code = code.replace("{.}", eachStr1);
-                        node.addLink(parseFieldName(code));
-                        var b = false;
-                        for (var i in data) {
-                            if(i.indexOf('__') != 0 && !(data[i] instanceof Function))
-                                eval("var " + i + " = (" + JSON.stringify(data[i]) + ")");
-                        }
-                        b = eval(code);
-                        if(b[0]){
-                            obj.addClass(b[1]);
-                        }else{
-                            obj.removeClass(b[1]);
                         }
                     }
 
                     if(obj.attr('jqcText')){
                         var name = obj.attr("jqcText");
-                        //cdata[0].chars[0].char
-                        name = name.replace("{.}", eachStr);
-                        obj.html(resolve(name, data));
-                        node.addLink(parseFieldName(name));
-                    }
-                    if(obj.attr('jqcSrc')){
-                        var name = obj.attr("jqcSrc");
-                        name = name.replace("{.}", eachStr);
-                        obj.attr('src', resolve(name, data));
-                        node.addLink(parseFieldName(name));
+                        if(name == '{.}'){
+                            if(eachData)obj.html(eachData);
+                        }else{
+                            obj.html(eval("data." + obj.attr("jqcText")));
+                            node.addLink(parseFieldName(obj.attr('jqcText')));
+                        }
                     }
                 });
 
@@ -269,91 +198,62 @@
                     templates_counter[childName]++;
                     var nodeFullId = `${nodeId}_${childName}_${templates_counter[childName]}`;
                     if(datas[nodeFullId]){
-                        console.log("has data " + nodeFullId);
+                        console.log("has data");
+                        console.log(datas);
                         obj.parent_node = node;
-                        parent_objs[nodeFullId] = obj;
-                        datas[nodeFullId].onReload();
-                        obj.html(datas[nodeFullId]);
+                        loop(obj, datas[nodeFullId], nodeFullId); //load data
                     }else{
-                        //console.log("no data");
+                        console.log("no data");
                         obj.parent_node = node;
                         loop(obj, null, nodeFullId);
                     }
                 });
             }
             node.loopObjs(tmpObj);
-            data.isValid = function(){
-                return parent_objs[nodeId].is(":visible");
-            }
-            data.update = function(){ //be careful of current scope!!! not match var node
+            data.update = function(){
                 console.log("data checking " + name);
-                //var node = datas[nodeId];
+                console.log(data);
+                console.log(data1);
                 var nodes = [];
                 $.each(data, function(k, v){
-                    if(k.indexOf('__') != 0 && !(v instanceof Function) && k != 'bFirstInit'){
-                        //console.log("data checking field " + k);
-                        var bChanged = false;
+                    if(!(v instanceof Function)){
                         if(JSON.stringify(v) != JSON.stringify(data1[k])){ //deep compare
-                            //console.log("data not eq "+k);
-                            bChanged = true;
-                        }else{
-                            $.each(node.link[k], function(i, event){
-                                var destField = event.destField;
-                                var targetNode = datas[event.targetNode];
-                                var targetObj = event.targetObj || 0;
-                                if(targetNode != node)
-                                    bChanged = true; //always update others node link
-                            });
+                            console.log("data not eq ");
+                            console.log(node.link[k]);
+                            if(node.link && node.link[k]){
+                                $.each(node.link[k], function(i, event){
+                                    var destField = event.destField;
+                                    var targetNode = event.targetNode;
+                                    var targetObj = event.targetObj || 0;
+                                    //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
+                                    if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
+                                        targetNode.set(destField, v);
+                                        console.log("data changed " + targetNode.scope("name", []) + " " + destField);
+                                        if(targetObj){
+                                            console.log("quick load data");
+                                            if(targetObj.is("input,select,textarea")) targetObj.val(v); 
+                                            else targetObj.text(v);
+                                        }else nodes.push(targetNode); //re-render                               
+                                        targetNode.copy(destField, v);   
+                                        if(targetNode != node) node.copy(k, v); 
+                                    }
+                                });     
+                            }                 
                         }
-                        //if(bChanged)console.log(node.link);
-                        if(bChanged && node.link && node.link[k]){
-                            //console.log("data not eq link "+k);
-                            $.each(node.link[k], function(i, event){
-                                var destField = event.destField;
-                                var targetNode = datas[event.targetNode];
-                                var targetObj = event.targetObj || 0;
-                                //console.log(JSON.stringify(targetNode.get(destField)) + " " + JSON.stringify(v));
-                                //todo targetNode removed somethings
-                                if((targetNode == node) || (JSON.stringify(targetNode.get(destField)) != JSON.stringify(v))){
-                                    targetNode.set(destField, v);
-                                    //console.log("data changed " + targetNode.scope("name", []) + " " + destField);
-                                    if(targetObj){
-                                        //console.log("quick load data");
-                                        if(targetObj.is("input,select,textarea")) targetObj.val(v); 
-                                        else targetObj.text(v);
-                                    }else nodes.push(targetNode); //re-render                               
-                                    targetNode.copy(destField, v);   
-                                    node.copy(k, v); //make signal off
-                                }
-                            });     
-                        }
-                    }                                       
+                    }
                 });
                 nodes = $.unique(nodes);
-                nodes = nodes.filter(function(i){
-                    var b = true;
-                    /*$.each(nodes, function(z, j){
-                        if(j.find(i).length > 0)
-                            b = false;
-                    }); have to reload */ 
-                    return b;
-                });
-                if(nodes.length > 1)
-                    console.log("2");
+                /*nodes.sort(function(a, b){
+                    return a.parent_obj.find(b.parent_obj)?-1:1;
+                })*/
                 $.each(nodes, function(){
                     this.reload();
                 })
             };
 
-            //console.log("load " + name);
-            //console.log(node);
+            console.log("load " + name);
             data.bFirstInit = false;
-            parent_objs[nodeId].html(node);
-            /*parent_objs[nodeId].css("border", "1px solid gray");
-            var cObj = parent_objs[nodeId];
-            setTimeout(function() {
-                cObj.css("border", "1px solid transparent");
-            }, 1000);*/
+            node.parent_obj.html(node);
             if(data.after) data.after();
         });  
     };  
