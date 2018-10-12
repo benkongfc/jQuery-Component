@@ -6,4 +6,6 @@ Download and put this project in a web static server, test it with http://yourdo
 License
 GPL
 
-Demo1 : https://jsfiddle.net/benkongfc/me5j7ugt/
+Demos:
+Hello World : https://jsfiddle.net/benkongfc/me5j7ugt
+If condition : https://jsfiddle.net/benkongfc/m1sn4wqp
