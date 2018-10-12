@@ -6,4 +6,4 @@ Download and put this project in a web static server, test it with http://yourdo
 License
 GPL
 
-Demo1 : https://jsfiddle.net/benkongfc/me5j7ugt/22/
+Demo1 : https://jsfiddle.net/benkongfc/me5j7ugt/
