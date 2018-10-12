@@ -20,3 +20,11 @@ Event : https://jsfiddle.net/benkongfc/za8t3om5/
 HTML Attributes : https://jsfiddle.net/benkongfc/r6hsvejy/
 
 Var Binding : https://jsfiddle.net/benkongfc/tkmfn48L/
+
+Components :
+
+jqc="xxx" tag is powerful that you can seperate all your html components into different object and re-use it again. I couldn't setup a demo in jsfiddle. You can check it out in the git components folder.
+
+Final Demo:
+
+index.html in git, a real world project for web app.
