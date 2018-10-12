@@ -1,6 +1,5 @@
 
     jqcModules.appCmd = {
-        //server: 'http://dev.cruisemegadeals.com:31381/wp-json/cmd_app/v1/all_deals',
         server: "data/all_deals.json",
         __deals : [],
         ldeals: [],
