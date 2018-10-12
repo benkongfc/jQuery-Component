@@ -16,3 +16,5 @@ If condition : https://jsfiddle.net/benkongfc/m1sn4wqp/
 Looping : https://jsfiddle.net/benkongfc/jyLkcvue/
 
 Event : https://jsfiddle.net/benkongfc/za8t3om5/
+
+HTML Attributes : https://jsfiddle.net/benkongfc/r6hsvejy/
