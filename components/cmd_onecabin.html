@@ -1,0 +1,34 @@
+<div>
+<div class="form-group">
+  <label><b>Cabins</b></label>
+  <div jqc="cmd_cabins_select" jqcLink="__detail->__detail,enqAdult->adult,enqCabinIndex->cabinIndex,changeCabin->changeCabin"></div>
+  <label>For us to hold the cabins, we need all passenger names as per passport *</label>
+</div>
+<div jqcEach="ppl">
+  <div class="form-group" style="float: left; width: 50%;padding-right: 8px;">
+      <label>
+        <strong>
+          First Name <span style="color:red;">*</span>
+        </strong>
+      </label>
+      <input class="form-control" jqcBind="ppl[${ppl_i}].first">
+  </div>
+  <div class="form-group" style="float: left; width: 50%;">
+      <label>
+        <strong>
+          Last Name <span style="color:red;">*</span>
+        </strong>
+      </label>
+      <input class="form-control" jqcBind="ppl[${ppl_i}].last">
+  </div>
+  <div class="form-group">
+      <label>
+        <strong>
+          DOB <span style="color:red;">*</span>
+        </strong>
+      </label>
+      <input type="date" class="form-control" jqcBind="ppl[${ppl_i}].dob">
+  </div>
+  <hr/>
+</div>
+</div>

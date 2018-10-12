@@ -1,14 +1,160 @@
-<h3 jqcText="detail.title.rendered"></h3>
-<img class="rounded img-fluid" jqcSrc="detail.thumburl">
+<h3 jqcText>${__detail.post_title}</h3>
+<div class="text-center">
+<img class="rounded img-thumbnail img-fluid" jqcAttr="['src', __detail.thumburl]"><br><br>
+</div>
 <div class="text-center">
     <ul>
-        <li jqcEach="detail.thumbul" class="text-left"><span jqcText="{.}"></span></li>
+        <li jqcEach="__detail.thumbul" class="text-left"><span jqcText>${__detail.thumbul[thumbul_i]}</span></li>
     </ul>
 </div>
-<div class="text-left" jqcText="detail.acf.ports"></div>
+<div class="text-left" jqcText>${__detail.acf.ports}</div>
 
-<script>
-    m = {
-        detail: {}
-    }
-</script>
+<br>
+<div id="detailTabs" style="padding-bottom: 20px;">
+    <div class="card">
+      <div class="card-header" id="headingOne">
+        <h5 class="mb-0">
+          <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            Rates
+          </button>
+        </h5>
+      </div>
+      <div id="collapseOne" class="collapse multi-collapse rates_info" jqcIfClass="[showBook == true, 'show']" aria-labelledby="headingOne" data-parent="#accordion">
+        <br>
+        <div jqc="cmd_ratestable" jqcLink="__detail->__detail,clickBook->clickBook"></div>
+        <br><br>
+        <div jqcText style="max-width: 100%; overflow-x: scroll;">${__detail.acf.rates}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" id="headingTwo">
+        <h5 class="mb-0">
+          <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            Itinerary
+          </button>
+        </h5>
+      </div>
+      <div id="collapseTwo" class="collapse multi-collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+        <br>
+          <div jqcEach="__detail.acf.itinerary_map">
+            <center><img class="img-fluid" jqcAttr="['src', __detail.acf.itinerary_map[itinerary_map_i]]" /></center>
+          </div>
+          <br><br>
+          <div jqcText class="itineraryDiv" style="max-width: 100%; overflow-x: scroll;">${__detail.acf.itinerary}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" id="headingSix">
+        <h5 class="mb-0">
+          <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+            Cruise Line
+          </button>
+        </h5>
+      </div>
+      <div id="collapseSix" class="collapse multi-collapse cruiseline_info" aria-labelledby="headingSix" data-parent="#accordion">
+        <br>
+        <div jqcEach="__detail.cruiselines">
+          <h4 jqcText>${__detail.cruiselines[cruiselines_i].post_title}</h4>
+          <div jqcText style="max-width: 100%; overflow-x: scroll;">${__detail.cruiselines[cruiselines_i].post_content}</div>
+        </div>
+      </div>
+    </div>
+      <div class="card">
+        <div class="card-header" id="headingFour">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+              Ship Info
+            </button>
+          </h5>
+        </div>
+        <div id="collapseFour" class="collapse multi-collapse ships_info" aria-labelledby="headingFour" data-parent="#accordion">
+          <br>
+          <div jqcEach="__detail.ships">
+            <h4 jqcText>${__detail.ships[ships_i].post_title}</h4>
+            <div jqcText style="max-width: 100%; overflow-x: scroll;">${__detail.ships[ships_i].post_content}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" jqcIf="__detail.ships[0].cabins[0].name">
+        <div class="card-header" id="headingThree">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+              Cabins
+            </button>
+          </h5>
+        </div>
+        <div id="collapseThree" class="collapse multi-collapse" aria-labelledby="headingThree" data-parent="#accordion">
+          <br>
+          <div class="cabins_info" jqc="cmd_cabins_info" jqcEmbedVar="cabinship_i:0,cabininfo_i:0" jqcLink="__detail->__detail,shipCount->shipCount">
+            <div class="form-group" jqcIf="shipCount > 1">
+              <select class="form-control" jqcBind="cabinship_i" jqcOnBind> 
+                  <option jqcEach="__detail.ships" jqcText jqcAttr="['value', ships_i]">${__detail.ships[ships_i].post_title}</option>
+              </select>  
+            </div>
+            <div class="form-group">
+              <select class="form-control" jqcBind="cabininfo_i" jqcOnBind> 
+                  <option jqcEach="__detail.ships[${cabinship_i}].cabins" jqcAttr="['value', cabins_i]" jqcText>${__detail.ships[${cabinship_i}].cabins[cabins_i].name}</option>
+              </select>  
+            </div>
+            <div jqcEach="__detail.ships[${cabinship_i}].cabins[${cabininfo_i}].images">
+              <center><img class="img-fluid" jqcAttr="['src', __detail.ships[${cabinship_i}].cabins[${cabininfo_i}].images[images_i]]" /></center>
+            </div>
+            <div jqcText style="max-width: 100%; overflow-x: scroll;">${__detail.ships[${cabinship_i}].cabins[${cabininfo_i}].info}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" jqcIf="hasDecks == true">
+        <div class="card-header" id="headingFive">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+              Deck Plans
+            </button>
+          </h5>
+        </div>
+        <div id="collapseFive" class="collapse multi-collapse" aria-labelledby="headingFive" data-parent="#accordion">
+          <br>
+          <div class="decks_info" jqc="cmd_decks_info" jqcEmbedVar="deckship_i:0,deckinfo_i:0" jqcLink="__detail->__detail, shipCount->shipCount">
+            <div class="form-group" jqcIf="shipCount > 1">
+              <select class="form-control" jqcBind="deckship_i" jqcOnBind> 
+                  <option jqcEach="__detail.ships" jqcAttr="['value', ships_i]" jqcText>${__detail.ships[ships_i].post_title}</option>
+              </select>  
+            </div>
+            <div class="form-group">
+              <select class="form-control" jqcBind="deckinfo_i" jqcOnBind> 
+                  <option jqcEach="__detail.ships[${deckship_i}].decks" jqcAttr="['value', decks_i]" jqcText>${__detail.ships[${deckship_i}].decks[decks_i].name}</option>
+              </select>  
+            </div>
+            <div jqcText>${__detail.ships[${deckship_i}].decks[${deckinfo_i}].images}</div>
+            <div jqcText style="max-width: 100%; overflow-x: scroll;">${__detail.ships[${deckship_i}].decks[${deckinfo_i}].info}</div>
+          </div>
+        </div>
+      </div>
+  </div>
+<div id="formTabs" style="padding-bottom: 70px;">
+    <div class="card">
+      <div class="card-header" id="headingOne">
+        <h5 class="mb-0">
+          <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFormOne" aria-expanded="true" aria-controls="collapseFormOne">
+            Book Now
+          </button>
+        </h5>
+      </div>
+      <div id="collapseFormOne" class="collapse multi-collapse" jqcIfClass="[showBook==true,'show']" aria-labelledby="headingOne" data-parent="#formTabs">
+        <br>
+        <div jqc="cmd_book" jqcLink="__detail->__detail,adultSelected->enqAdult,cabinSelected->enqCabinIndex"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" id="headingOne">
+        <h5 class="mb-0">
+          <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFormTwo" aria-expanded="true" aria-controls="collapseFormTwo">
+            Enquiry Now
+          </button>
+        </h5>
+      </div>
+      <div id="collapseFormTwo" class="collapse multi-collapse" aria-labelledby="headingTwo" data-parent="#formTabs">
+        <br>
+        <div jqc="cmd_enquiry" jqcLink="__detail->__detail,adultSelected->enqAdult,cabinSelected->enqCabinIndex"></div>
+      </div>
+    </div>
+</div>

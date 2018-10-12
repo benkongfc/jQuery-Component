@@ -1,0 +1,33 @@
+    <h1>
+        Contact Us
+    </h1>
+    <div>
+        <b>Business Hours:</b> 9:00am - 5:00pm, Mon - Fri 
+    </div>
+    <div>
+        <b>Email:</b> Support@CruiseMegaDeals.com.au
+    </div>
+    <br>
+    <div jqcIf="sent == true">
+        <h3>Your message was sent, Thank you.</h3>
+    </div>
+    <form jqcIf="sent == false" method="post" jqcOn="submit: 'sendcontact()'">
+        <label>Name: *</label>
+        <br>
+        <input jqcBind='fullname' class="col-12" jqcIfClass="[err==true,'errorInput']" style="border:1px solid black;margin-bottom: 10px;">
+        <br>
+        <label>Email address: *</label>
+        <br>
+        <input jqcBind='email' class="col-12" jqcIfClass="[err==true,'errorInput']" style="border:1px solid black;margin-bottom: 10px;">
+        <br>
+        <label>Phone Number:</label>
+        <br>
+        <input jqcBind='phone' class="col-12" style="border:1px solid black;margin-bottom: 10px;">
+        <br>
+        <label>Message: *</label>
+        <br>
+        <textarea jqcBind='message' rows="5" cols="20" class="col-12" jqcIfClass="[err==true,'errorInput']" style="border:1px solid black;"></textarea>
+        <br>
+        <input type="submit" name="submit" style="width:100%;margin-top:10px;">
+    </form>
+<br><br><br>

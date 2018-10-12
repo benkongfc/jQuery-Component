@@ -1,7 +1,9 @@
-<h3><a href="javascript:;" jqcText="title.rendered" jqcOn="click: {fire: 'parent.showPost(index)'}"></a></h3>
-<img class="rounded img-fluid" jqcSrc="thumburl">
+<h3><a href="javascript:;" jqcText jqcOn="click: 'showPost(index)'">${post_title}</a></h3>
+<a href="javascript:;" jqcOn="click: 'showPost(index)'"><img class="rounded img-thumbnail img-fluid mx-auto d-block" jqcAttr="['src', thumburl]"></a>
 <div class="text-center">
     <ul>
-        <li jqcEach="thumbul" class="text-left"><span jqcText="{.}"></span></li>
+        <li jqcEach="thumbul" class="text-left"><span jqcText>${thumbul[thumbul_i]}</span></li>
     </ul>
 </div>
+<div style="text-align: right;"><a href="javascript:;" jqcOn="click: 'switchFav(id)&&onReload()'"><span jqcIf="favor == false" class="oi oi-heart" style="color:#ff6c00;"></span><span jqcIf="favor == true" class="oi oi-check" style="color:#ff6c00;"></span></a></div>
+<hr/>

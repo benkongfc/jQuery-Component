@@ -1,0 +1,10 @@
+<div class="form-group">
+  <select class="form-control" id="sel1" jqcBind="adult" jqcOn="change: 'changeCabin(adult, cabinIndex)'"> 
+    <option jqcEach="__detail.cabin_adults" jqcAttr="['value', cabin_adults_i]" jqcText>${__detail.cabin_adults[cabin_adults_i]}</option>
+  </select>
+</div>
+<div class="form-group">
+  <select class="form-control" id="sel2" jqcBind="cabinIndex" jqcOn="change: 'changeCabin(adult, cabinIndex)'"> 
+    <option jqcEach="__detail.prices[${adult}]" jqcAttr="['value', adult_i]" jqcText>${__detail.prices[adult][adult_i].name} - $${__detail.prices[adult][adult_i].price}</option>
+  </select>
+</div>

@@ -1,0 +1,21 @@
+<select jqcBind="adult" jqcOnBind> 
+    <option jqcAttr="['value', cabin_adults_i]" jqcEach="__detail.cabin_adults" jqcText>${__detail.cabin_adults[cabin_adults_i]}</option>
+</select> 
+<div>
+  <table class="cabins_table">
+    <thead>
+    <tr>
+        <th>Cabin Name</th>
+        <th><center>Price</center></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+      <tr jqcEach="__detail.prices[${adult}]">
+        <td jqcText>${__detail.prices[${adult}][${adult_i}].name}</td>
+        <td jqcText>$${__detail.prices[${adult}][${adult_i}].price}</td>
+        <td><a href="javascript:void();" jqcOn="click: 'clickBook(adult, ${adult_i})'">Book</a></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

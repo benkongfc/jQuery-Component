@@ -3,25 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
-  <title>JQC</title>
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <title>Cruise Mega Deals</title>
+  <!--<link rel="manifest" href="manifest.webmanifest">-->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script src="assets/js/jquery.cookie.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.1.6/css/swiper.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.1.6/js/swiper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+  <!--<link href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.1.6/css/swiper.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.1.6/js/swiper.min.js"></script>-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
-  <script src="jqc.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+  <style type="text/css">
+    .loader {
+      border: 16px solid #f3f3f3; /* Light grey */
+      border-top: 16px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      animation: spin 2s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+  </style>
+  <script type="text/javascript">
+    function addScript(ver){
+      var scriptEl = document.createElement("script");
+      scriptEl.type = "text/javascript";
+      scriptEl.src = 'jqc_utils.js' + (ver?`?${ver}`:"");
+      scriptEl.onload = function() {
+        var scriptEl = document.createElement("script");
+        scriptEl.type = "text/javascript";
+        scriptEl.src = 'jqc.js' + (ver?`?${ver}`:"");
+        scriptEl.onload = function() {
+          jqcLoop('#appCmd', 'appCmd', ver);
+        };
+        document.getElementsByTagName('head')[0].appendChild(scriptEl);
+      };
+      document.getElementsByTagName('head')[0].appendChild(scriptEl);      
+    };
+    
+    jQuery.get("jqc_ver?" + new Date().getTime(), {}, function(ver){
+      addScript(ver);
+    }).fail(function() 
+    {
+      addScript(localStorage.getItem("ver")); //chrome app caches
+    });
+    /*if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+    }*/
+    
+    window.addEventListener('load', function() {
+      window.history.pushState({}, '');
+      jQuery("#exitPopDiv").on('hidden.bs.modal', function (e) {
+        window.history.pushState({}, '');
+      });
+    });
+    window.addEventListener('popstate', function() {
+      if(jQuery('#exitPopDiv').hasClass('show')){
+      }else{
+        jQuery("#exitPopBtn").click();
+      }
+    });
+  </script>
 </head>
-<body id="appCmd" jqc="appCmd">
-    <div id="app" class="container" jqc="app"></div>
-    <div id="appTodo" class="container" jqc="appTodo"></div>
-    <div id="appChinese" class="container" jqc="appChinese"></div>
-    <script>
-        //jqcLoop('#app', 'app');
-        //jqcLoop('#appTodo', 'appTodo');
-        jqcLoop('#appCmd', 'appCmd');
-        //jqcLoop('#appChinese', 'appChinese');
-    </script>
+<body>
+
+<div id="appCmd" jqc="appCmd"><center style="padding-top: 50%;"><div class="loader"></div></center></div>
+  
+<!-- Small modal -->
+<button id="exitPopBtn" type="button" style="display: none;" data-toggle="modal" data-target="#exitPopDiv">...</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exitPopDiv" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Close the App</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Press back button one more time to close this App.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

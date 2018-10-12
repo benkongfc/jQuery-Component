@@ -6,120 +6,96 @@
         padding: 3rem 1.5rem;
         text-align: center;
     }
-</style>
-<div jqc="cmd_navbar" jqcLink="page->page"></div>
-<main role="main" class="container">
-    <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-    </form>
-    <div jqcIf="page == 'list'">
-        <div jqcIf="deals.length == 0">Loading...</div>
-        <div jqc="cmd_dealslide" jqcEach="ldeals"></div>
-    </div>
-    <div jqcIf="page == 'detail'">
-        <div jqc="cmd_details" jqcLink="detail->detail"></div>
-    </div>
-    <div jqcIf="page == 'todaydeals' && detail">
-        <div jqc="cmd_details" jqcLink="detail->detail"></div>
-    </div>
-
-</main>
-
-<script>
-    var m;
-    $(window).on("scroll", function() {
-        var scrollHeight = $(document).height();
-        var scrollPosition = $(window).height() + $(window).scrollTop();
-        if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
-            m.load10deals();
-            m.update();
-        }
-    });
-
-    m = {
-        deals : [],
-        ldeals: [],
-        detail: null,
-        page: 'list',
-        ldealsIndex: 10,
-        after: function() {
-            var swiper = new Swiper('.swiper-container', {
-                    pagination: {
-                    el: '.swiper-pagination',
-                    dynamicBullets: true,
-                },
-            });
-        },
-        processData: function(data){
-            data.forEach(function(d, i){
-                var images = d.acf.images;
-                images = images.match(/src=[\'\"](.*?)[\'\"]/);
-                if(images){
-                    d.thumburl = images[1].replace("http://www.firstclass.com.au", 
-                        "https://d2tu0namn5fw5o.cloudfront.net");
-                }
-                d.thumbul = [];
-                var dep = n = f = c = p = 0;
-                dep = moment(d.acf.departure_dates[0].departure_date, "YYYYMMDD").format('D MMM YYYY');
-                n = d.acf.duration;
-                f = d.acf.ports.split(",").shift();
-                c = d.acf.ports.split(",").pop();
-                if(d.acf.selling_price)
-                    p = `$${d.acf.selling_price}`;
-                else
-                    p = `$${d.acf.price}`;
-                d.thumbul.push(`Departs ${dep}, ${n} nights`);
-                d.thumbul.push(`Travel from ${f} to ${c}`);
-                d.thumbul.push(d.acf.saving_text.replace(/<br>/g, " "));
-                d.thumbul.push(`Book now from ${p}`);
-                d.index = i;
-            });
-            return data;
-        },
-        load: function() {
-            var This = this;
-            var deals = localStorage.getItem("deals");
-            if(!deals){
-                $.get("http://dev.firstclass.com.au:31381/wp-json/wp/v2/cruise/?_embed&per_page=10", {}, function(data){
-                    localStorage.setItem("deals", JSON.stringify(data));
-                    This.deals = This.processData(data);
-                    This.ldeals = This.deals.slice(0, 10);
-                    This.update();
-                });
-            }else{
-                This.deals = This.processData(JSON.parse(deals));
-                This.ldeals = This.deals.slice(0, 10);
-                if(This.update)
-                    This.update();
-            }
-        },
-        showPost: function(index){
-            console.log(this.deals[index]);
-            this.detail = this.deals[index];
-            this.page = 'detail';
-        },
-        back: function() {
-            this.page = 'list';
-        },
-        todaydeals: function() {
-            this.page = 'todaydeals';
-            this.detail = null;
-            var This = this;
-            this.deals.some(function(c){
-                if(c.tags.indexOf(614) > -1){
-                    This.detail = c;  
-                    return true; 
-                }
-            });
-        },
-        alldeals: function() {
-            this.page = 'list';
-        },
-        favourites: function() {
-            this.page = 'favourites';
-        },
-        load10deals: function(){
-            this.ldeals = this.ldeals.concat(this.deals.slice(this.ldealsIndex, this.ldealsIndex+=10));
-        }
+    .errorInput {
+        border: 1px solid red !important;
     }
-</script>
+    .loader {
+        margin-top: 50%;
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .itineraryDiv table td{
+        padding: 5px;
+        border: 1px solid lightgray !important;
+    }
+    .itineraryDiv div{
+        margin: 0px !important;
+    }
+    .itineraryDiv img, .cabins_info img, .ships_info img, .cruiseline_info img, .decks_info img, .rates_info img{
+        max-width: 100%;
+        height: auto;
+    }
+    #detailTabs .card, #formTabs .card {
+        border: 0px;
+    }
+    #detailTabs .card-header, #formTabs .card-header {
+        border: 1px solid rgba(0,0,0,.125);
+    }
+    .cabins_info ul {
+        padding-left: 2px;
+        margin: 10px !important;
+    }
+    .cabins_info ul ul {
+        margin: 0px !important;
+    }
+    .ships_info div {
+        margin-left: 0px !important;
+    }
+    .cabins_table {
+        width: 100%;
+    }
+    .animated.faster {
+        animation-duration: 200ms;
+    }
+</style>
+<div jqc="cmd_navbar" jqcLink="page->page,back->back,todaydeals->todaydeals,alldeals->alldeals,favourites->favourites,aboutus->aboutus,contactus->contactus"></div>
+<main role="main" class="container">
+    <form class="form-inline my-2 my-lg-0" jqcOn="submit : 'dosearch()'">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="ie. Oceania Sydney" aria-label="Search" aria-describedby="button-topsearch" jqcBind='searchTxt'>
+          <div class="input-group-append">
+            <button jqcIf="page != 'search'" class="btn btn-outline-secondary" type="submit" id="button-topsearch">Search</button>
+            <button jqcIf="page == 'search'" class="btn btn-outline-secondary" type="button" id="button-topsearch" jqcOn="click : 'resetSearch()'">X</button>
+          </div>
+        </div>
+    </form>
+    <div jqcIf="page == 'list'" class="mainContainer">
+        <div jqcIf="deals_length == 0">
+            <center>
+                <div class="loader"></div>
+            </center>
+        </div>
+        <center jqcIf="updated == true">
+            <div class="newdealsalert" style="color:red;">
+                <a href="javascript:;" jqcOn="click : 'reload()'">New Deals Now Avaliable, Don't Miss Out! <span class="oi oi-loop-circular"></span></a>
+            </div>
+        </center>
+        <div jqc="cmd_dealslide" jqcEach="ldeals" jqcLink="showPost->showPost,ldeals_i->index" class="animated faster slideInLeft"></div>
+    </div>
+    <div jqcIf="page == 'search'" class="mainContainer">
+        <div jqc="cmd_dealslide" jqcEach="ldeals" jqcLink="showPost->showPost,ldeals_i->index" class="animated faster slideInLeft"></div>
+    </div>
+    <div jqcIf="page == 'detail'" class="mainContainer">
+        <div jqc="cmd_details" jqcLink="detail->__detail" class="animated faster slideInLeft"></div>
+    </div>
+    <div jqcIf="page == 'todaydeals' && detail" class="mainContainer">
+        <div jqc="cmd_details" jqcLink="detail->__detail" class="animated faster slideInLeft"></div>
+    </div>
+    <div jqcIf="page == 'aboutus'" class="mainContainer">
+        <div jqc="cmd_aboutus" class="animated faster slideInLeft"></div>
+    </div>
+    <div jqcIf="page == 'contactus'" class="mainContainer">
+        <div jqc="cmd_contactus" class="animated faster slideInLeft"></div>
+    </div>
+    <div jqcIf="page == 'favourites'" class="mainContainer">
+        <div jqc="cmd_dealslide" jqcEach="ldeals" jqcLink="showPost->showPost,ldeals_i->index,reloadFavour->onReload" class="animated faster slideInLeft"></div>
+    </div>
+</main>

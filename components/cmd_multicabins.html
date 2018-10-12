@@ -1,0 +1,8 @@
+<div>
+    <div jqcEach="cabinsAmount">
+        <div jqc="cmd_onecabin" jqcKeepData jqcLink="__detail->__detail,enqAdult->enqAdult,enqCabinIndex->enqCabinIndex,cabinsAmount_i->cabinIndex"></div>
+        <center jqcIf="cabinsAmount.length > 1 || cabinsAmount_i > 0"><a href="javascript:;" jqcOn="click : 'delCab(${cabinsAmount_i})'">Delete this Cabin</a></center>
+        <br><br>
+    </div>
+    <center><a href="javascript:;" jqcOn="click : 'addCab()'">Add a Cabin</a></center>
+</div>

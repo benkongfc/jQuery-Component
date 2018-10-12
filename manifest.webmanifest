@@ -1,0 +1,15 @@
+{
+  "background_color": "purple",
+  "description": "Astralia's Best Cruise Deals",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "assets/img/cmd_icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "name": "Cruise Mega Deals",
+  "short_name": "Cmd Cruises",
+  "start_url": "index.html"
+}
