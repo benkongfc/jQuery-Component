@@ -21,9 +21,9 @@ HTML Attributes : https://jsfiddle.net/benkongfc/r6hsvejy/
 
 Var Binding : https://jsfiddle.net/benkongfc/tkmfn48L/
 
-Components :
+Components Demos:
 
-jqc="xxx" tag is powerful that you can seperate all your html components into different object and re-use it again. I couldn't setup a demo in jsfiddle. You can check it out in the git components folder.
+https://benkongfc.github.io/demo2.html , code : https://github.com/benkongfc/benkongfc.github.io
 
 Final Demo:
 
