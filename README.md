@@ -18,3 +18,5 @@ Looping : https://jsfiddle.net/benkongfc/jyLkcvue/
 Event : https://jsfiddle.net/benkongfc/za8t3om5/
 
 HTML Attributes : https://jsfiddle.net/benkongfc/r6hsvejy/
+
+Var Binding : https://jsfiddle.net/benkongfc/tkmfn48L/
