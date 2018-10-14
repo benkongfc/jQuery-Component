@@ -7,9 +7,7 @@ React is big, how about a more simple way? It's only 500 lines of code, everythi
   <script type="text/javascript" src="https://benkongfc.github.io/jqc.js"></script>
 ```
 
-License
-
-GPL
+GPL License 
 
 # Demos:
 
