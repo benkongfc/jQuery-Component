@@ -23,7 +23,8 @@ Var Binding : https://jsfiddle.net/benkongfc/tkmfn48L/
 
 Components Demos:
 
-https://benkongfc.github.io/demo2.html , code : https://github.com/benkongfc/benkongfc.github.io
+Hello World with components : https://benkongfc.github.io/demo2.html , git : https://github.com/benkongfc/benkongfc.github.io
+Callback from child component : https://benkongfc.github.io/demo3.html
 
 Final Demo:
 
