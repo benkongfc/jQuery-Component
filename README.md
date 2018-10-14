@@ -25,6 +25,8 @@ HTML Attributes : https://jsfiddle.net/benkongfc/r6hsvejy/
 
 Var Binding : https://jsfiddle.net/benkongfc/tkmfn48L/
 
+Trigger rendering by external event : https://jsfiddle.net/benkongfc/4hmbz6vy/
+
 Components Demos:
 
 Hello World with components : https://benkongfc.github.io/demo2.html , git : https://github.com/benkongfc/benkongfc.github.io
