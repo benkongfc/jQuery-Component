@@ -1,8 +1,6 @@
 # jQuery-Component
 React is big, how about a more simple way?
 
-Download and put this project in a web static server, test it with http://yourdomain.com/dir/index.html
-
 License
 
 GPL
@@ -31,4 +29,4 @@ Advanced Looping : https://benkongfc.github.io/demo4.html
 
 Final Demo:
 
-index.html in git, a real world project for web app.
+index.html in git, a real world project for web app. Download and put this project in a web static server, test it with http://yourdomain.com/dir/index.html
