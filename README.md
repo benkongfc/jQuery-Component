@@ -27,6 +27,8 @@ Hello World with components : https://benkongfc.github.io/demo2.html , git : htt
 
 Callback from child component : https://benkongfc.github.io/demo3.html
 
+Advanced Looping : https://benkongfc.github.io/demo4.html
+
 Final Demo:
 
 index.html in git, a real world project for web app.
