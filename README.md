@@ -27,11 +27,13 @@ Trigger rendering by external event : https://jsfiddle.net/benkongfc/4hmbz6vy/
 
 # Components Demos:
 
-Hello World with components : https://benkongfc.github.io/demo2.html , git : https://github.com/benkongfc/benkongfc.github.io
+Hello World with components : https://benkongfc.github.io/demo2.html
 
 Callback from child component : https://benkongfc.github.io/demo3.html
 
 Advanced Looping : https://benkongfc.github.io/demo4.html
+
+git : https://github.com/benkongfc/benkongfc.github.io
 
 # Final Demo:
 
