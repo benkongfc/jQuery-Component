@@ -11,7 +11,7 @@ GPL License
 
 # Demos:
 
-Hello World : <a href="https://jsfiddle.net/benkongfc/me5j7ugt/" target="_blank">https://jsfiddle.net/benkongfc/me5j7ugt/</a> 
+Hello World : https://jsfiddle.net/benkongfc/me5j7ugt/
 
 If condition : https://jsfiddle.net/benkongfc/m1sn4wqp/
 
