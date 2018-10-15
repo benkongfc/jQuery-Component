@@ -29,6 +29,8 @@ Trigger rendering by external event : https://jsfiddle.net/benkongfc/4hmbz6vy/
 
 # Components Demos:
 
+Components can be use again by other component, also Component can use others Components in many levels to make a tree Virtual DOM
+
 Hello World with components : https://benkongfc.github.io/demo2.html
 
 Callback from child component : https://benkongfc.github.io/demo3.html
