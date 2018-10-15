@@ -25,6 +25,8 @@ Var Binding : https://jsfiddle.net/benkongfc/tkmfn48L/
 
 Trigger rendering by external event : https://jsfiddle.net/benkongfc/4hmbz6vy/
 
+Foreign exchange calculator : https://jsfiddle.net/benkongfc/xt8o73u4/
+
 # Components Demos:
 
 Hello World with components : https://benkongfc.github.io/demo2.html
