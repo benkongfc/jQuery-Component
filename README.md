@@ -1,5 +1,5 @@
 # jQuery-Component
-React is big, how about a more simple way? It's only 500 lines of code, everything is your under control.
+React is big, how about a more simple way? It's only 500 lines of code, everything is under your control.
 
 ```html
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
