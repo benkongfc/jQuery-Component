@@ -1,4 +1,8 @@
-/* global getHtmlForChildren,extend,jqcDatas,jQuery,jqcModules,err_log,deepEqual,evalScope,removeChildItem,bindLoad,evalSet,extractKey,templates_counter,deepCopy */
+/* 
+https://github.com/benkongfc/jQuery-Component
+License GPL
+
+global getHtmlForChildren,extend,jqcDatas,jQuery,jqcModules,err_log,deepEqual,evalScope,removeChildItem,bindLoad,evalSet,extractKey,templates_counter,deepCopy */
 (function($){
     window.jqcDatas = {};
     window.templates_counter = {};
